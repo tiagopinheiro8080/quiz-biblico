@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Bíblico - Jornada da Fé</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <!-- Tone.js for Sound -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation; /* Improves mobile responsiveness */
+        }
+        .font-signature {
+            font-family: 'Great Vibes', cursive;
+        }
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .active-screen {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .medal {
+            filter: grayscale(100%) opacity(40%);
+        }
+        .medal-earned {
+            filter: none;
+            opacity: 1;
+        }
+        .phase-button {
+            transition: all 0.2s ease;
+        }
+        .phase-button.locked {
+            filter: grayscale(80%);
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden h-screen flex items-center justify-center">
+
+    <!-- Main Container -->
+    <div id="game-container" class="w-full max-w-lg h-full md:h-[95%] md:max-h-[800px] bg-cover bg-center bg-[url('https://placehold.co/800x1200/26203B/FFFFFF?text=Fundo+ Celestial')] shadow-2xl rounded-lg flex flex-col p-4 relative overflow-hidden">
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="absolute inset-0 bg-gray-900 bg-opacity-80 flex-col items-center justify-center z-50 screen">
+            <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-4 text-lg">Carregando...</p>
+        </div>
+        
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="w-full h-full flex-col items-center justify-center screen active-screen">
+            <h1 class="text-5xl font-bold text-yellow-300 mb-2">Quiz Bíblico</h1>
+            <p class="text-xl text-gray-200 mb-8">Jornada da Fé</p>
+            
+            <div id="auth-container" class="w-full max-w-sm p-6 bg-black bg-opacity-50 rounded-lg">
+                <div id="login-view">
+                    <h2 class="text-2xl text-center mb-4">Login</h2>
+                    <input type="email" id="login-email" placeholder="Email" class="w-full p-3 mb-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white">
+                    <input type="password" id="login-password" placeholder="Senha" class="w-full p-3 mb-4 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white">
+                    <button id="login-button" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold p-3 rounded-lg text-lg transition-colors">Entrar</button>
+                    <p class="text-center mt-4 text-sm">Não tem uma conta? <a href="#" id="show-signup" class="text-yellow-400 hover:underline">Cadastre-se</a></p>
+                </div>
+                <div id="signup-view" class="hidden">
+                    <h2 class="text-2xl text-center mb-4">Cadastro</h2>
+                    <input type="email" id="signup-email" placeholder="Email" class="w-full p-3 mb-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white">
+                    <input type="password" id="signup-password" placeholder="Senha" class="w-full p-3 mb-4 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white">
+                    <button id="signup-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold p-3 rounded-lg text-lg transition-colors">Criar Conta</button>
+                    <p class="text-center mt-4 text-sm">Já tem uma conta? <a href="#" id="show-login" class="text-yellow-400 hover:underline">Faça Login</a></p>
+                </div>
+            </div>
+            
+             <div class="mt-12 text-center text-yellow-200 opacity-80">
+                <p class="font-signature text-5xl">T. Pinheiro</p>
+                <p class="text-sm tracking-widest">CRIADO POR</p>
+             </div>
+        </div>
+
+        <!-- Main Menu Screen -->
+        <div id="menu-screen" class="w-full h-full flex-col items-center justify-center text-center screen">
+            <h1 class="text-5xl font-bold text-yellow-300 mb-8">Menu Principal</h1>
+            <div class="w-full max-w-xs space-y-4">
+                <button id="play-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold p-4 rounded-lg text-xl shadow-lg transition-transform hover:scale-105">Jogar</button>
+                <button id="logout-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold p-4 rounded-lg text-xl shadow-lg transition-transform hover:scale-105">Sair</button>
+            </div>
+            <div class="absolute bottom-4 left-4 right-4 text-center">
+                <p class="text-sm text-gray-300">Sugestões? Envie para:</p>
+                <a href="mailto:thywagogame2@gmail.com" class="text-yellow-400 hover:underline">thywagogame2@gmail.com</a>
+                 <p class="mt-4 text-xs text-gray-500">ID do Usuário: <span id="user-id-display"></span></p>
+            </div>
+        </div>
+        
+        <!-- Level Select Screen -->
+        <div id="level-select-screen" class="w-full h-full flex-col items-center screen p-4">
+             <div class="flex items-center justify-between w-full mb-6">
+                <button id="back-to-menu-from-level" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-full transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
+                <h2 class="text-3xl font-bold text-yellow-300">Níveis</h2>
+                <div class="w-8"></div>
+            </div>
+            <div id="level-container" class="w-full grid grid-cols-1 gap-4 overflow-y-auto">
+                <!-- Levels will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Phase Select Screen -->
+        <div id="phase-select-screen" class="w-full h-full flex-col items-center screen p-4">
+            <div class="flex items-center justify-between w-full mb-6">
+                <button id="back-to-levels" class="bg-gray-700 hover:bg-gray-600 p-2 rounded-full transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
+                <h2 id="phase-level-title" class="text-3xl font-bold text-yellow-300">Fases</h2>
+                <div class="w-8"></div>
+            </div>
+            <div id="phase-container" class="w-full grid grid-cols-3 sm:grid-cols-4 gap-4 overflow-y-auto">
+                <!-- Phases will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="w-full h-full flex-col justify-between p-4 screen">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-lg font-semibold">Nível <span id="quiz-level"></span> - Fase <span id="quiz-phase"></span></p>
+                    <p class="text-lg font-semibold"> <span id="question-counter">1</span> / <span id="total-questions">10</span></p>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-4">
+                    <div id="progress-bar" class="bg-green-500 h-2.5 rounded-full" style="width: 10%"></div>
+                </div>
+            </div>
+            <div class="flex-grow flex flex-col items-center justify-center">
+                <p id="question-text" class="text-2xl text-center font-medium mb-8 p-4 bg-black bg-opacity-30 rounded-lg"></p>
+                <div id="options-container" class="w-full max-w-md grid grid-cols-1 gap-4">
+                    <!-- Options buttons will be here -->
+                </div>
+            </div>
+            <div class="h-12"></div>
+        </div>
+
+        <!-- Result Modal -->
+        <div id="result-modal" class="absolute inset-0 bg-gray-900 bg-opacity-90 flex-col items-center justify-center z-20 p-8 text-center screen">
+            <h2 id="result-title" class="text-4xl font-bold mb-4"></h2>
+            <p id="result-message" class="text-xl mb-6"></p>
+            <div id="medal-earned-container" class="mb-6"></div>
+            <button id="next-phase-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold p-4 rounded-lg text-xl w-full max-w-xs">Continuar</button>
+        </div>
+
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURAÇÃO ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyD32CYm_94dGlcau6t_tdWzQcgHgOUyUPI",
+  authDomain: "quiz-biblico-cf2f9.firebaseapp.com",
+  projectId: "quiz-biblico-cf2f9",
+  storageBucket: "quiz-biblico-cf2f9.firebasestorage.app",
+  messagingSenderId: "978496819229",
+  appId: "1:978496819229:web:bf4daa9e46beb3b15d76f4",
+  measurementId: "G-WQY5YB1TL2"
+};        
+        
+        // --- INICIALIZAÇÃO ---
+        let app, auth, db;
+        try {
+            // OBS: Adicione suas credenciais do Firebase acima para testar
+            // No ambiente real, essas variáveis são fornecidas automaticamente.
+            const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+            app = initializeApp(finalFirebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            setPersistence(auth, browserLocalPersistence); // Persistir login
+            console.log("Firebase inicializado com sucesso.");
+        } catch(e) {
+            console.error("Erro ao inicializar o Firebase. Verifique suas credenciais.", e);
+            alert("Erro de configuração do Firebase. O aplicativo não funcionará corretamente.");
+        }
+
+
+        // --- BANCO DE PERGUNTAS ---
+        const allQuestions = [
+            // Nível 1: O Pentateuco (Gênesis a Deuteronômio)
+            // Fase 1
+            { level: 1, phase: 1, question: "Qual o primeiro livro da Bíblia?", options: ["Êxodo", "Levítico", "Gênesis", "Salmos"], answer: 2 },
+            { level: 1, phase: 1, question: "Quem foi o primeiro homem?", options: ["Caim", "Abel", "Noé", "Adão"], answer: 3 },
+            { level: 1, phase: 1, question: "Quem foi a primeira mulher?", options: ["Sara", "Eva", "Rute", "Ester"], answer: 1 },
+            { level: 1, phase: 1, question: "O que Deus criou no primeiro dia?", options: ["Os animais", "O homem", "A luz", "As plantas"], answer: 2 },
+            { level: 1, phase: 1, question: "Qual animal enganou Eva no Jardim do Éden?", options: ["Leão", "Serpente", "Macaco", "Corvo"], answer: 1 },
+            { level: 1, phase: 1, question: "Quem cometeu o primeiro assassinato na Bíblia?", options: ["Abel", "Adão", "Caim", "Sete"], answer: 2 },
+            { level: 1, phase: 1, question: "Quantos dias e noites durou o dilúvio?", options: ["7", "30", "40", "100"], answer: 2 },
+            { level: 1, phase: 1, question: "Qual o nome da arca construída para sobreviver ao dilúvio?", options: ["Arca da Aliança", "Arca de Noé", "Arca do Tesouro", "Arca da Salvação"], answer: 1 },
+            { level: 1, phase: 1, question: "Qual foi o sinal que Deus deu a Noé de que nunca mais destruiria a Terra com água?", options: ["Estrela", "Arco-íris", "Nuvem", "Pomba"], answer: 1 },
+            { level: 1, phase: 1, question: "Qual torre os homens construíram para tentar alcançar o céu?", options: ["Torre de Davi", "Torre de Babel", "Torre de Pisa", "Torre do Templo"], answer: 1 },
+            // Fase 2
+            { level: 1, phase: 2, question: "Quem é conhecido como o 'Pai da Fé'?", options: ["Moisés", "Davi", "Abraão", "Isaque"], answer: 2 },
+            { level: 1, phase: 2, question: "Qual era o nome da esposa de Abraão?", options: ["Rebeca", "Raquel", "Sara", "Lia"], answer: 2 },
+            { level: 1, phase: 2, question: "Qual sobrinho de Abraão foi com ele para a Terra Prometida?", options: ["Ló", "Esaú", "Jacó", "Labão"], answer: 0 },
+            { level: 1, phase: 2, question: "De qual cidade Deus mandou Ló e sua família fugirem?", options: ["Jerusalém", "Sodoma", "Babilônia", "Nínive"], answer: 1 },
+            { level: 1, phase: 2, question: "A esposa de Ló foi transformada em uma estátua de quê?", options: ["Ouro", "Pedra", "Sal", "Areia"], answer: 2 },
+            { level: 1, phase: 2, question: "Qual o nome do filho que Abraão teve com Sara na velhice?", options: ["Ismael", "Isaque", "Jacó", "José"], answer: 1 },
+            { level: 1, phase: 2, question: "O que Deus pediu para Abraão sacrificar?", options: ["Um cordeiro", "Seu filho Isaque", "Toda a sua riqueza", "Um boi"], answer: 1 },
+            { level: 1, phase: 2, question: "Quem se casou com Isaque?", options: ["Lia", "Raquel", "Rebeca", "Zípora"], answer: 2 },
+            { level: 1, phase: 2, question: "Isaque e Rebeca tiveram dois filhos gêmeos. Quais eram seus nomes?", options: ["Caim e Abel", "Moisés e Arão", "Jacó e Esaú", "José e Benjamim"], answer: 2 },
+            { level: 1, phase: 2, question: "Quem vendeu seu direito de primogenitura por um prato de lentilhas?", options: ["Jacó", "Esaú", "Rúben", "Judá"], answer: 1 },
+            // Fase 3
+            { level: 1, phase: 3, question: "Jacó teve que trabalhar para Labão por quantos anos para se casar com Raquel?", options: ["7", "10", "14", "20"], answer: 2 },
+            { level: 1, phase: 3, question: "Qual era o nome da primeira esposa de Jacó, irmã de Raquel?", options: ["Rebeca", "Lia", "Bila", "Zilpa"], answer: 1 },
+            { level: 1, phase: 3, question: "Com quem Jacó lutou no vau de Jaboque?", options: ["Um leão", "Esaú", "Um anjo/Deus", "Labão"], answer: 2 },
+            { level: 1, phase: 3, question: "Qual foi o novo nome que Jacó recebeu após a luta?", options: ["Abraão", "Israel", "Judá", "Efraim"], answer: 1 },
+            { level: 1, phase: 3, question: "Quantos filhos Jacó teve no total?", options: ["2", "7", "10", "12"], answer: 3 },
+            { level: 1, phase: 3, question: "Os filhos de Jacó se tornaram os líderes das doze...?", options: ["Nações de Israel", "Tribos de Israel", "Cidades de Israel", "Províncias de Israel"], answer: 1 },
+            { level: 1, phase: 3, question: "Qual era o filho favorito de Jacó?", options: ["Rúben", "Judá", "José", "Benjamim"], answer: 2 },
+            { level: 1, phase: 3, question: "Que presente especial Jacó deu a José?", options: ["Um anel de ouro", "Um cajado", "Uma túnica colorida", "Cem ovelhas"], answer: 2 },
+            { level: 1, phase: 3, question: "Por que os irmãos de José o odiavam?", options: ["Porque ele era o mais forte", "Por causa de seus sonhos e do favoritismo do pai", "Porque ele os acusava de roubo", "Porque ele não trabalhava"], answer: 1 },
+            { level: 1, phase: 3, question: "O que os irmãos de José fizeram com ele?", options: ["O abandonaram no deserto", "O venderam como escravo", "O jogaram de um penhasco", "O entregaram a um rei vizinho"], answer: 1 },
+            // Fase 4
+            { level: 1, phase: 4, question: "Para qual país José foi levado como escravo?", options: ["Canaã", "Babilônia", "Assíria", "Egito"], answer: 3 },
+            { level: 1, phase: 4, question: "Quem comprou José no Egito?", options: ["Faraó", "Um padeiro", "Potifar, oficial de Faraó", "Um sacerdote"], answer: 2 },
+            { level: 1, phase: 4, question: "Por que José foi preso?", options: ["Ele roubou seu mestre", "Ele foi falsamente acusado pela esposa de Potifar", "Ele desobedeceu a uma ordem", "Ele matou um guarda"], answer: 1 },
+            { level: 1, phase: 4, question: "José ficou famoso na prisão por qual habilidade?", options: ["Força física", "Cantar", "Interpretar sonhos", "Escrever"], answer: 2 },
+            { level: 1, phase: 4, question: "De quem eram os sonhos que José interpretou na prisão?", options: ["Do carcereiro e sua esposa", "De dois outros prisioneiros", "Do copeiro-chefe e do padeiro-chefe", "De Faraó e sua rainha"], answer: 2 },
+            { level: 1, phase: 4, question: "Qual foi o sonho de Faraó?", options: ["Sete estrelas caindo do céu", "Um rio de sangue", "Sete vacas gordas e sete vacas magras", "Uma estátua de ouro"], answer: 2 },
+            { level: 1, phase: 4, question: "Qual foi a interpretação de José para o sonho de Faraó?", options: ["Uma grande guerra", "A morte de Faraó", "Sete anos de fartura seguidos por sete anos de fome", "A construção de uma nova pirâmide"], answer: 2 },
+            { level: 1, phase: 4, question: "Que posição José recebeu de Faraó?", options: ["Chefe dos exércitos", "Sacerdote principal", "Governador de todo o Egito", "Conselheiro real"], answer: 2 },
+            { level: 1, phase: 4, question: "O que os irmãos de José vieram comprar no Egito?", options: ["Ouro", "Tecidos", "Alimento", "Armas"], answer: 2 },
+            { level: 1, phase: 4, question: "Como José testou seus irmãos?", options: ["Escondendo um copo de prata na bagagem deles", "Fazendo-os lutar entre si", "Pedindo que lhe trouxessem seu pai", "Dando-lhes uma prova de conhecimento"], answer: 0 },
+            // Fase 5
+            { level: 1, phase: 5, question: "Qual era o nome do irmão mais novo de José?", options: ["Rúben", "Simeão", "Judá", "Benjamim"], answer: 3 },
+            { level: 1, phase: 5, question: "Em que terra Faraó permitiu que a família de Jacó vivesse?", options: ["Mênfis", "Tebas", "Gósen", "Luxor"], answer: 2 },
+            { level: 1, phase: 5, question: "Qual livro da Bíblia vem depois de Gênesis?", options: ["Êxodo", "Levítico", "Números", "Deuteronômio"], answer: 0 },
+            { level: 1, phase: 5, question: "De qual tribo de Israel Moisés era descendente?", options: ["Judá", "Benjamim", "Levi", "Rúben"], answer: 2 },
+            { level: 1, phase: 5, question: "Por que a mãe de Moisés o colocou em um cesto no rio?", options: ["Para ele passear", "Para salvá-lo do decreto de Faraó de matar os bebês hebreus", "Como um sacrifício ao deus do rio", "Porque ela não podia sustentá-lo"], answer: 1 },
+            { level: 1, phase: 5, question: "Quem encontrou o bebê Moisés no rio Nilo?", options: ["Uma serva", "A filha de Faraó", "Uma sacerdotisa", "A rainha do Egito"], answer: 1 },
+            { level: 1, phase: 5, question: "Por que Moisés fugiu do Egito?", options: ["Ele foi exilado por Faraó", "Ele matou um egípcio que maltratava um hebreu", "Ele descobriu que não era egípcio", "Houve uma grande fome"], answer: 1 },
+            { level: 1, phase: 5, question: "Onde Deus falou com Moisés pela primeira vez?", options: ["No topo de uma montanha", "Em um sonho", "Em uma sarça ardente", "À beira do rio"], answer: 2 },
+            { level: 1, phase: 5, question: "Qual era o nome do irmão de Moisés, que se tornou seu porta-voz?", options: ["Josué", "Calebe", "Arão", "Miriã"], answer: 2 },
+            { level: 1, phase: 5, question: "Qual foi a primeira praga que Deus enviou ao Egito?", options: ["Rãs", "Gafanhotos", "A água do Nilo virou sangue", "Escuridão"], answer: 2 },
+            // Fase 6
+            { level: 1, phase: 6, question: "Quantas pragas Deus enviou sobre o Egito?", options: ["3", "7", "10", "12"], answer: 2 },
+            { level: 1, phase: 6, question: "Qual foi a última praga?", options: ["Morte das colheitas", "Morte do gado", "Morte dos primogênitos", "Tempestade de granizo"], answer: 2 },
+            { level: 1, phase: 6, question: "O que os israelitas fizeram para que o anjo da morte 'passasse por cima' de suas casas?", options: ["Oraram em voz alta", "Acenderam uma fogueira", "Passaram sangue de cordeiro nos umbrais das portas", "Ficaram em silêncio absoluto"], answer: 2 },
+            { level: 1, phase: 6, question: "Qual festa judaica comemora a libertação do Egito?", options: ["Yom Kippur", "Hanukkah", "Páscoa (Pessach)", "Purim"], answer: 2 },
+            { level: 1, phase: 6, question: "Qual mar os israelitas atravessaram ao fugir do Egito?", options: ["Mar Mediterrâneo", "Mar Morto", "Mar da Galileia", "Mar Vermelho"], answer: 3 },
+            { level: 1, phase: 6, question: "Como Deus guiava os israelitas durante o dia no deserto?", options: ["Com uma estrela", "Com uma coluna de nuvem", "Com um anjo visível", "Com um mapa"], answer: 1 },
+            { level: 1, phase: 6, question: "E como Deus os guiava durante a noite?", options: ["Com uma tocha gigante", "Com a lua brilhando mais forte", "Com uma coluna de fogo", "Com vozes do céu"], answer: 2 },
+            { level: 1, phase: 6, question: "Que alimento milagroso Deus forneceu no deserto?", options: ["Pão e peixe", "Maná", "Frutas e mel", "Cereais"], answer: 1 },
+            { level: 1, phase: 6, question: "De onde Moisés tirou água para o povo?", options: ["De um poço antigo", "De uma rocha", "De um cacto", "Do céu"], answer: 1 },
+            { level: 1, phase: 6, question: "Qual o nome da montanha onde Deus entregou os Dez Mandamentos a Moisés?", options: ["Monte das Oliveiras", "Monte Sinai", "Monte Carmelo", "Monte Nebo"], answer: 1 },
+            // Fase 7
+            { level: 1, phase: 7, question: "Qual foi o primeiro dos Dez Mandamentos?", options: ["Não matarás", "Não terás outros deuses além de mim", "Honra teu pai e tua mãe", "Não roubarás"], answer: 1 },
+            { level: 1, phase: 7, question: "Enquanto Moisés estava na montanha, que ídolo o povo de Israel fez para adorar?", options: ["Uma serpente de bronze", "Um peixe de prata", "Um bezerro de ouro", "Um leão de pedra"], answer: 2 },
+            { level: 1, phase: 7, question: "O que era guardado dentro da Arca da Aliança?", options: ["Ouro e prata", "As tábuas dos Dez Mandamentos, um pote de maná e o cajado de Arão", "As roupas de Moisés", "Livros sagrados"], answer: 1 },
+            { level: 1, phase: 7, question: "Qual era o nome da tenda sagrada que servia como santuário para os israelitas no deserto?", options: ["Templo", "Sinagoga", "Tabernáculo", "Santuário"], answer: 2 },
+            { level: 1, phase: 7, question: "Qual livro da Bíblia detalha as leis para os sacerdotes e as ofertas?", options: ["Gênesis", "Êxodo", "Levítico", "Números"], answer: 2 },
+            { level: 1, phase: 7, question: "Quantos espias Moisés enviou para explorar a terra de Canaã?", options: ["2", "7", "10", "12"], answer: 3 },
+            { level: 1, phase: 7, question: "Quais foram os dois únicos espias que trouxeram um relatório positivo e confiaram em Deus?", options: ["Moisés e Arão", "Nadabe e Abiú", "Corá e Datã", "Josué e Calebe"], answer: 3 },
+            { level: 1, phase: 7, question: "Qual foi a consequência do relatório negativo dos dez espias e da incredulidade do povo?", options: ["Foram imediatamente atacados", "Tiveram que vagar pelo deserto por 40 anos", "Voltaram para o Egito", "Moisés foi substituído"], answer: 1 },
+            { level: 1, phase: 7, question: "Quem se rebelou contra a liderança de Moisés e Arão e foi engolido pela terra?", options: ["Balaão", "Corá", "Zimri", "Og"], answer: 1 },
+            { level: 1, phase: 7, question: "Por que Moisés não foi autorizado a entrar na Terra Prometida?", options: ["Ele desobedeceu a Deus, ferindo a rocha em vez de falar com ela", "Ele adorou o bezerro de ouro", "Ele era muito velho", "O povo não o queria mais como líder"], answer: 0 },
+             // Fase 8
+            { level: 1, phase: 8, question: "Qual profeta foi chamado para amaldiçoar Israel, mas acabou abençoando-os?", options: ["Balaão", "Isaías", "Jeremias", "Miqueias"], answer: 0 },
+            { level: 1, phase: 8, question: "Qual animal falou com Balaão?", options: ["Um cavalo", "Uma pomba", "Uma jumenta", "Um camelo"], answer: 2 },
+            { level: 1, phase: 8, question: "O livro de Números é chamado assim por causa de quê?", options: ["Dos números das leis", "Dos dois censos (contagens) do povo", "Dos números das batalhas", "Dos salmos numerados"], answer: 1 },
+            { level: 1, phase: 8, question: "Qual livro consiste principalmente nos discursos de despedida de Moisés ao povo de Israel?", options: ["Levítico", "Números", "Deuteronômio", "Josué"], answer: 2 },
+            { level: 1, phase: 8, question: "A palavra 'Deuteronômio' significa o quê?", options: ["Primeira Lei", "Lei Santa", "Repetição da Lei", "Fim da Lei"], answer: 2 },
+            { level: 1, phase: 8, question: "Onde Moisés morreu?", options: ["No Egito", "Em Canaã", "No Monte Nebo", "No deserto de Sinai"], answer: 2 },
+            { level: 1, phase: 8, question: "Quem foi escolhido por Deus para suceder Moisés como líder de Israel?", options: ["Arão", "Calebe", "Josué", "Gideão"], answer: 2 },
+            { level: 1, phase: 8, question: "Qual é o 'Shema Israel', um dos principais mandamentos repetidos em Deuteronômio?", options: ["Amar a Deus sobre todas as coisas", "Não cobiçar", "Guardar o sábado", "Não ter outros deuses"], answer: 0 },
+            { level: 1, phase: 8, question: "Quantos livros formam o Pentateuco?", options: ["3", "5", "7", "10"], answer: 1 },
+            { level: 1, phase: 8, question: "A quem a tradição atribui a autoria do Pentateuco?", options: ["Abraão", "Davi", "Moisés", "Josué"], answer: 2 },
+            // Fase 9
+            { level: 1, phase: 9, question: "Quais são as três divisões da lei mosaica?", options: ["Moral, Civil e Cerimonial", "Antiga, Média e Nova", "Divina, Humana e Natural", "Pública, Privada e Religiosa"], answer: 0 },
+            { level: 1, phase: 9, question: "O que era o Urim e o Tumim?", options: ["Instrumentos musicais", "Objetos usados pelo Sumo Sacerdote para consultar a vontade de Deus", "Tipos de sacrifício", "Portões do Tabernáculo"], answer: 1 },
+            { level: 1, phase: 9, question: "Qual era a função principal dos levitas?", options: ["Serem os guerreiros de Israel", "Cuidar do Tabernáculo e dos rituais religiosos", "Serem os juízes", "Coletar impostos"], answer: 1 },
+            { level: 1, phase: 9, question: "O que era o 'Ano do Jubileu'?", options: ["Um ano de festa e celebração", "Um ano de guerra santa", "A cada 50 anos, as dívidas eram perdoadas e as terras devolvidas", "O ano em que o rei era coroado"], answer: 2 },
+            { level: 1, phase: 9, question: "O que eram as 'cidades de refúgio'?", options: ["Cidades onde os reis moravam", "Cidades para se esconder de inimigos em tempos de guerra", "Cidades onde alguém que matou outra pessoa acidentalmente poderia se abrigar", "Cidades sagradas para festivais"], answer: 2 },
+            { level: 1, phase: 9, question: "Qual o nome da irmã de Moisés e Arão, que era profetisa?", options: ["Débora", "Miriã", "Ana", "Raabe"], answer: 1 },
+            { level: 1, phase: 9, question: "Qual era a oferta queimada completamente no altar?", options: ["Oferta de paz", "Holocausto", "Oferta de manjares", "Oferta pelo pecado"], answer: 1 },
+            { level: 1, phase: 9, question: "O Dia da Expiação, ou 'Yom Kippur', era o dia em que o Sumo Sacerdote entrava em que lugar?", options: ["No pátio do Tabernáculo", "Na casa dele", "No Santo dos Santos", "No acampamento inimigo"], answer: 2 },
+            { level: 1, phase: 9, question: "Qual destes não era filho de Jacó?", options: ["Judá", "Levi", "José", "Calebe"], answer: 3 },
+            { level: 1, phase: 9, question: "Em Gênesis, quem viveu por mais tempo, 969 anos?", options: ["Noé", "Adão", "Enoque", "Matusalém"], answer: 3 },
+            // Fase 10
+            { level: 1, phase: 10, question: "Qual o tema principal do livro de Levítico?", options: ["A história da criação", "A jornada no deserto", "Santidade e adoração", "A conquista de Canaã"], answer: 2 },
+            { level: 1, phase: 10, question: "Que animal Aarão fez para o povo adorar?", options: ["Um touro de bronze", "Uma ovelha de pedra", "Um bezerro de ouro", "Um leão de madeira"], answer: 2 },
+            { level: 1, phase: 10, question: "Qual o mandamento que diz respeito ao dia de descanso?", options: ["Não matarás", "Não furtarás", "Lembra-te do dia de sábado, para o santificar", "Honra teu pai e tua mãe"], answer: 2 },
+            { level: 1, phase: 10, question: "Quem eram os filhos de Arão que foram mortos por oferecerem 'fogo estranho' a Deus?", options: ["Eleazar e Itamar", "Nadabe e Abiú", "Hofni e Fineias", "Corá e Datã"], answer: 1 },
+            { level: 1, phase: 10, question: "No deserto, o que aconteceu com a serpente de bronze que Moisés fez?", options: ["Foi destruída pelo povo", "Quem olhava para ela era curado da picada de cobras", "Foi guardada na Arca da Aliança", "Transformou-se em pó"], answer: 1 },
+            { level: 1, phase: 10, question: "A bênção sacerdotal em Números 6 começa com que frase?", options: ["'O Senhor te abençoe e te guarde...'", "'Ouve, ó Israel...'", "'Em paz me deito e logo pego no sono...'", "'O Senhor é meu pastor...'"], answer: 0 },
+            { level: 1, phase: 10, question: "Qual dos cinco livros do Pentateuco é o último?", options: ["Gênesis", "Êxodo", "Números", "Deuteronômio"], answer: 3 },
+            { level: 1, phase: 10, question: "Qual a promessa central de Deus a Abraão?", options: ["Que ele seria rei", "Que ele teria uma descendência numerosa como as estrelas", "Que ele viveria para sempre", "Que ele derrotaria todos os seus inimigos"], answer: 1 },
+            { level: 1, phase: 10, question: "O Pentateuco também é conhecido pelos judeus como...", options: ["A Lei", "A Torá", "Os Escritos", "Os Profetas"], answer: 1 },
+            { level: 1, phase: 10, question: "Onde Jacó teve o sonho com uma escada que ia até o céu?", options: ["Em Siquém", "Em Hebrom", "Em Betel", "Em Jerusalém"], answer: 2 },
+            
+            // Nível 2: Livros Históricos (Josué a Ester)
+            // Fase 1
+            { level: 2, phase: 1, question: "Qual livro vem depois de Deuteronômio?", options: ["Juízes", "Rute", "Josué", "1 Samuel"], answer: 2 },
+            { level: 2, phase: 1, question: "Qual foi a primeira cidade que os israelitas conquistaram em Canaã sob a liderança de Josué?", options: ["Ai", "Jerusalém", "Hebrom", "Jericó"], answer: 3 },
+            { level: 2, phase: 1, question: "Como os muros de Jericó caíram?", options: ["Com catapultas", "Após os israelitas marcharem ao redor da cidade e tocarem as trombetas", "Por um terremoto", "Os espias abriram os portões"], answer: 1 },
+            { level: 2, phase: 1, question: "Quem escondeu os espias israelitas em Jericó?", options: ["Débora", "Jael", "Raabe", "Lídia"], answer: 2 },
+            { level: 2, phase: 1, question: "O que aconteceu com Acã depois que ele pegou tesouros amaldiçoados de Jericó?", options: ["Ele se tornou rei", "Ele foi perdoado", "Ele e sua família foram apedrejados", "Ele foi exilado"], answer: 2 },
+            { level: 2, phase: 1, question: "Que milagre Deus realizou para Josué durante a batalha contra os amorreus?", options: ["Fez chover fogo", "Abriu a terra", "Fez o sol e a lua pararem", "Enviou um exército de anjos"], answer: 2 },
+            { level: 2, phase: 1, question: "Após a conquista, a Terra Prometida foi dividida entre quem?", options: ["Os sacerdotes", "A família de Josué", "As doze tribos de Israel", "Os mais ricos"], answer: 2 },
+            { level: 2, phase: 1, question: "Qual é a famosa declaração de fé de Josué no final de sua vida?", options: ["'O Senhor é meu pastor'", "'Eu e a minha casa serviremos ao Senhor'", "'Combati o bom combate'", "'Deus é o meu refúgio'"], answer: 1 },
+            { level: 2, phase: 1, question: "Qual o nome do período após a morte de Josué, quando Israel era governado por líderes militares e civis chamados por Deus?", options: ["Período dos Reis", "Período dos Juízes", "Período dos Profetas", "Período do Exílio"], answer: 1 },
+            { level: 2, phase: 1, question: "Quem foi o único juiz canhoto mencionado na Bíblia, que libertou Israel de Eglom, rei de Moabe?", options: ["Gideão", "Sansão", "Eúde", "Otniel"], answer: 2 },
+            // Fase 2
+            { level: 2, phase: 2, question: "Quem foi a única mulher juíza de Israel?", options: ["Ester", "Rute", "Débora", "Jael"], answer: 2 },
+            { level: 2, phase: 2, question: "Quem matou Sísera, o comandante do exército cananeu, com uma estaca de tenda?", options: ["Débora", "Baraque", "Jael", "Uma serva"], answer: 2 },
+            { level: 2, phase: 2, question: "Qual juiz foi chamado por um anjo enquanto malhava o trigo e pediu um sinal com um velo de lã?", options: ["Sansão", "Jefté", "Gideão", "Samuel"], answer: 2 },
+            { level: 2, phase: 2, question: "Com quantos homens Gideão derrotou o exército midianita?", options: ["32.000", "10.000", "1.000", "300"], answer: 3 },
+            { level: 2, phase: 2, question: "Que voto controverso Jefté fez a Deus em troca da vitória sobre os amonitas?", options: ["Sacrificar a primeira coisa que saísse de sua casa para recebê-lo", "Nunca mais cortar o cabelo", "Dar toda a sua riqueza aos pobres", "Construir um templo"], answer: 0 },
+            { level: 2, phase: 2, question: "Qual juiz era famoso por sua força sobre-humana, que vinha de seus cabelos compridos?", options: ["Gideão", "Sansão", "Davi", "Golias"], answer: 1 },
+            { level: 2, phase: 2, question: "De qual povo Sansão lutou contra?", options: ["Amorreus", "Moabitas", "Filisteus", "Cananeus"], answer: 2 },
+            { level: 2, phase: 2, question: "Quem descobriu o segredo da força de Sansão e o traiu?", options: ["Sua mãe", "Uma serva", "Dalila", "Jezabel"], answer: 2 },
+            { level: 2, phase: 2, question: "Como Sansão morreu?", options: ["Em batalha", "De velhice", "Derrubando um templo sobre si mesmo e os filisteus", "Foi executado"], answer: 2 },
+            { level: 2, phase: 2, question: "A frase 'Naqueles dias não havia rei em Israel; cada um fazia o que parecia bem aos seus olhos' resume qual livro?", options: ["Josué", "Juízes", "Rute", "1 Samuel"], answer: 1 },
+            // Fase 3
+            { level: 2, phase: 3, question: "De qual nação era Rute?", options: ["Israelita", "Moabita", "Egípcia", "Filisteia"], answer: 1 },
+            { level: 2, phase: 3, question: "Qual era o nome da sogra de Rute?", options: ["Sara", "Rebeca", "Noemi", "Ana"], answer: 2 },
+            { level: 2, phase: 3, question: "A famosa frase 'aonde quer que fores, irei eu' foi dita por quem para quem?", options: ["Davi para Jônatas", "Rute para Noemi", "Abraão para Deus", "Pedro para Jesus"], answer: 1 },
+            { level: 2, phase: 3, question: "Quem foi o 'parente resgatador' que se casou com Rute?", options: ["Elimeleque", "Malom", "Boaz", "Jessé"], answer: 2 },
+            { level: 2, phase: 3, question: "Rute se tornou bisavó de qual rei famoso?", options: ["Saul", "Salomão", "Davi", "Josias"], answer: 2 },
+            { level: 2, phase: 3, question: "Quem era a mãe de Samuel?", options: ["Penina", "Ana", "Abigail", "Bate-Seba"], answer: 1 },
+            { level: 2, phase: 3, question: "A quem Ana dedicou seu filho Samuel para servir no templo?", options: ["Ao profeta Natã", "Ao sacerdote Eli", "Ao rei Saul", "A Deus"], answer: 1 },
+            { level: 2, phase: 3, question: "O que o povo de Israel pediu a Samuel que os desagradasse e a Deus?", options: ["Mais comida", "Um rei para governá-los", "Um novo templo", "Menos leis"], answer: 1 },
+            { level: 2, phase: 3, question: "Quem foi o primeiro rei de Israel?", options: ["Davi", "Salomão", "Saul", "Jeroboão"], answer: 2 },
+            { level: 2, phase: 3, question: "Por que Deus rejeitou Saul como rei?", options: ["Por sua desobediência em não esperar por Samuel e em não destruir totalmente os amalequitas", "Porque ele era fraco", "Porque o povo não gostava dele", "Porque ele perdeu uma batalha"], answer: 0 },
+            // Fase 4
+            { level: 2, phase: 4, question: "Quem Samuel ungiu secretamente para ser o próximo rei de Israel?", options: ["Jônatas", "Abner", "Davi", "Salomão"], answer: 2 },
+            { level: 2, phase: 4, question: "Qual era a profissão de Davi antes de se tornar conhecido?", options: ["Soldado", "Sacerdote", "Pastor de ovelhas", "Carpinteiro"], answer: 2 },
+            { level: 2, phase: 4, question: "Qual gigante filisteu Davi derrotou?", options: ["Og", "Sife", "Golias", "Laís"], answer: 2 },
+            { level: 2, phase: 4, question: "Com que arma Davi derrotou o gigante?", options: ["Uma espada", "Um arco e flecha", "Uma funda e uma pedra", "Uma lança"], answer: 2 },
+            { level: 2, phase: 4, question: "Quem era o melhor amigo de Davi e filho do rei Saul?", options: ["Abner", "Jônatas", "Joabe", "Absalão"], answer: 1 },
+            { level: 2, phase: 4, question: "Por que Saul passou a perseguir Davi?", options: ["Por ciúmes e medo de que Davi tomasse seu trono", "Porque Davi o desobedeceu", "Porque Davi roubou sua riqueza", "Por uma ordem de Deus"], answer: 0 },
+            { level: 2, phase: 4, question: "Em que caverna Davi poupou a vida de Saul pela primeira vez?", options: ["Macpela", "Adulão", "En-Gedi", "Maqueronte"], answer: 2 },
+            { level: 2, phase: 4, question: "Como Saul morreu?", options: ["Em uma batalha contra os filisteus, ele cometeu suicídio", "Davi o matou", "Foi assassinado por seus servos", "De velhice"], answer: 0 },
+            { level: 2, phase: 4, question: "Após a morte de Saul, Davi se tornou rei sobre qual tribo primeiro?", options: ["Benjamim", "Efraim", "Judá", "Levi"], answer: 2 },
+            { level: 2, phase: 4, question: "Qual cidade Davi conquistou e tornou a capital de Israel?", options: ["Hebrom", "Siquém", "Samaria", "Jerusalém"], answer: 3 },
+            // Fase 5
+            { level: 2, phase: 5, question: "O que Davi tentou trazer para Jerusalém, mas falhou na primeira tentativa resultando na morte de Uzá?", options: ["O tesouro do templo", "A Arca da Aliança", "O altar de bronze", "A menorá"], answer: 1 },
+            { level: 2, phase: 5, question: "Quem era o profeta que aconselhava Davi e o confrontou sobre seu pecado?", options: ["Samuel", "Elias", "Natã", "Isaías"], answer: 2 },
+            { level: 2, phase: 5, question: "Com quem Davi cometeu adultério?", options: ["Abigail", "Mical", "Bate-Seba", "Jezabel"], answer: 2 },
+            { level: 2, phase: 5, question: "Quem era o marido de Bate-Seba, que Davi mandou para a frente de batalha para morrer?", options: ["Joabe", "Urias", "Abner", "Amasa"], answer: 1 },
+            { level: 2, phase: 5, question: "Qual filho de Davi se rebelou contra ele e tentou tomar o trono?", options: ["Salomão", "Amnom", "Absalão", "Adonias"], answer: 2 },
+            { level: 2, phase: 5, question: "Como Absalão morreu?", options: ["Seu cabelo ficou preso em uma árvore e ele foi morto por Joabe", "Em batalha contra Davi", "Foi envenenado", "Davi o perdoou"], answer: 0 },
+            { level: 2, phase: 5, question: "Qual filho de Davi o sucedeu como rei?", options: ["Adonias", "Salomão", "Natã", "Absalão"], answer: 1 },
+            { level: 2, phase: 5, question: "O que Salomão pediu a Deus em um sonho?", options: ["Riqueza", "Longa vida", "Sabedoria", "A morte de seus inimigos"], answer: 2 },
+            { level: 2, phase: 5, question: "Qual famosa história demonstra a sabedoria de Salomão?", options: ["A derrota de Golias", "A interpretação de sonhos", "A decisão sobre o bebê disputado por duas mães", "A construção da arca"], answer: 2 },
+            { level: 2, phase: 5, question: "Qual a principal construção que Salomão realizou em Jerusalém?", options: ["O palácio real", "As muralhas da cidade", "O Templo de Deus", "Um aqueduto"], answer: 2 },
+            // Fase 6
+            { level: 2, phase: 6, question: "Qual rainha visitou Salomão para testar sua sabedoria?", options: ["A Rainha da Babilônia", "A Rainha de Sabá", "A Rainha Ester", "A Rainha de Ofir"], answer: 1 },
+            { level: 2, phase: 6, question: "Qual foi o principal motivo do declínio de Salomão no final de sua vida?", options: ["Ele se tornou ganancioso", "Ele se casou com muitas mulheres estrangeiras que o levaram à idolatria", "Ele oprimiu o povo com impostos", "Ele perdeu uma guerra"], answer: 1 },
+            { level: 2, phase: 6, question: "Após a morte de Salomão, o reino de Israel se dividiu em dois. Quais eram seus nomes?", options: ["Israel e Judá", "Norte e Sul", "Samaria e Jerusalém", "Efraim e Benjamim"], answer: 0 },
+            { level: 2, phase: 6, question: "Quem se tornou o primeiro rei do Reino do Norte (Israel)?", options: ["Roboão", "Jeroboão", "Acabe", "Josafá"], answer: 1 },
+            { level: 2, phase: 6, question: "Quem se tornou o primeiro rei do Reino do Sul (Judá)?", options: ["Jeroboão", "Roboão", "Asa", "Ezequias"], answer: 1 },
+            { level: 2, phase: 6, question: "Que pecado Jeroboão cometeu para impedir o povo de ir a Jerusalém para adorar?", options: ["Construiu um novo templo", "Fez dois bezerros de ouro para serem adorados", "Proibiu a leitura da Lei", "Matou os sacerdotes"], answer: 1 },
+            { level: 2, phase: 6, question: "Qual profeta desafiou os profetas de Baal no Monte Carmelo?", options: ["Eliseu", "Isaías", "Jeremias", "Elias"], answer: 3 },
+            { level: 2, phase: 6, question: "O que Deus enviou para consumir o sacrifício de Elias?", options: ["Vento", "Água", "Fogo do céu", "Um raio"], answer: 2 },
+            { level: 2, phase: 6, question: "Para onde Elias fugiu da rainha Jezabel?", options: ["Para o Egito", "Para o deserto, até o Monte Horebe", "Para a Babilônia", "Para a casa de um amigo"], answer: 1 },
+            { level: 2, phase: 6, question: "Como Elias foi levado ao céu?", options: ["Ele morreu de velhice", "Em um terremoto", "Em um redemoinho por uma carruagem de fogo", "Um anjo o levou"], answer: 2 },
+            // Fase 7
+            { level: 2, phase: 7, question: "Quem foi o sucessor do profeta Elias?", options: ["Geazi", "Eliseu", "Jonas", "Amós"], answer: 1 },
+            { level: 2, phase: 7, question: "Que pedido Eliseu fez a Elias antes de ele ser levado?", options: ["Riqueza e honra", "Uma porção dobrada do seu espírito", "Vingança contra seus inimigos", "Uma vida longa"], answer: 1 },
+            { level: 2, phase: 7, question: "Qual foi o milagre que Eliseu realizou para a viúva de um profeta?", options: ["Multiplicou seu pão", "Curou seu filho", "Multiplicou seu azeite em muitas vasilhas", "Deu-lhe ouro"], answer: 2 },
+            { level: 2, phase: 7, question: "Quem era Naamã, o homem que Eliseu curou da lepra?", options: ["Um rei de Israel", "Um sacerdote de Judá", "Um comandante do exército da Síria", "Um servo de Eliseu"], answer: 2 },
+            { level: 2, phase: 7, question: "Onde Eliseu disse para Naamã mergulhar para ser curado?", options: ["No Mar Morto", "No Rio Jordão", "No Rio Nilo", "Em uma fonte de águas puras"], answer: 1 },
+            { level: 2, phase: 7, question: "Qual rei de Israel era casado com a perversa Jezabel?", options: ["Omri", "Acabe", "Jeú", "Acazias"], answer: 1 },
+            { level: 2, phase: 7, question: "O que Jezabel queria de Nabote, que ele se recusou a vender?", options: ["Sua casa", "Sua vinha", "Seu gado", "Sua filha"], answer: 1 },
+            { level: 2, phase: 7, question: "Quem foi ungido rei para destruir a casa de Acabe e exterminar a adoração a Baal?", options: ["Jorão", "Josafá", "Jeú", "Joás"], answer: 2 },
+            { level: 2, phase: 7, question: "Qual império conquistou o Reino do Norte (Israel) e levou o povo para o exílio?", options: ["Babilônico", "Persa", "Assírio", "Egípcio"], answer: 2 },
+            { level: 2, phase: 7, question: "Qual bom rei de Judá promoveu uma grande reforma religiosa e celebrou a Páscoa como não se via há muito tempo?", options: ["Asa", "Josafá", "Ezequias", "Acaz"], answer: 2 },
+            // Fase 8
+            { level: 2, phase: 8, question: "Durante o reinado do rei Ezequias, qual profeta estava ativo em Judá?", options: ["Elias", "Jeremias", "Daniel", "Isaías"], answer: 3 },
+            { level: 2, phase: 8, question: "Qual foi o rei mais perverso de Judá, que reinou por 55 anos mas se arrependeu no final da vida?", options: ["Acaz", "Manassés", "Amom", "Jeoaquim"], answer: 1 },
+            { level: 2, phase: 8, question: "Qual rei de Judá encontrou o 'Livro da Lei' no templo e liderou uma grande reforma espiritual?", options: ["Ezequias", "Josafá", "Josias", "Salomão"], answer: 2 },
+            { level: 2, phase: 8, question: "Como o bom rei Josias morreu?", options: ["De velhice", "Em uma batalha contra o Faraó Neco do Egito", "Foi assassinado em seu palácio", "De uma doença"], answer: 1 },
+            { level: 2, phase: 8, question: "Qual império conquistou o Reino do Sul (Judá) e destruiu o Templo de Salomão?", options: ["Assírio", "Babilônico", "Persa", "Grego"], answer: 1 },
+            { level: 2, phase: 8, question: "Qual rei da Babilônia foi responsável pela destruição de Jerusalém?", options: ["Nabucodonosor", "Senaqueribe", "Belsazar", "Ciro"], answer: 0 },
+            { level: 2, phase: 8, question: "O que aconteceu com a maioria do povo de Judá após a conquista babilônica?", options: ["Foram todos mortos", "Foram levados para o exílio na Babilônia", "Fugiram para o Egito", "Reconstruíram a cidade imediatamente"], answer: 1 },
+            { level: 2, phase: 8, question: "O livro de Crônicas reconta a história de Israel com foco em que linhagem?", options: ["A linhagem sacerdotal", "A linhagem real de Davi", "A linhagem dos profetas", "A história de todas as tribos igualmente"], answer: 1 },
+            { level: 2, phase: 8, question: "Qual rei persa conquistou a Babilônia e permitiu que os judeus voltassem para sua terra?", options: ["Dario", "Xerxes", "Artaxerxes", "Ciro, o Grande"], answer: 3 },
+            { level: 2, phase: 8, question: "Qual livro descreve o retorno do primeiro grupo de exilados e a reconstrução do Templo?", options: ["Neemias", "Ester", "Esdras", "Daniel"], answer: 2 },
+            // Fase 9
+            { level: 2, phase: 9, question: "Quem liderou a reconstrução do Templo em Jerusalém?", options: ["Neemias", "Esdras", "Zorobabel e Jesua", "Ageu"], answer: 2 },
+            { level: 2, phase: 9, question: "Quais profetas incentivaram o povo a continuar a reconstrução do Templo?", options: ["Isaías e Jeremias", "Elias e Eliseu", "Ageu e Zacarias", "Daniel e Ezequiel"], answer: 2 },
+            { level: 2, phase: 9, question: "Esdras era um escriba conhecido por sua devoção a quê?", options: ["À construção", "À Lei de Deus", "À política", "À guerra"], answer: 1 },
+            { level: 2, phase: 9, question: "Qual foi o principal problema que Esdras confrontou quando chegou a Jerusalém?", options: ["A pobreza do povo", "O templo estava inacabado", "Os casamentos dos judeus com mulheres estrangeiras idólatras", "Ataques de inimigos"], answer: 2 },
+            { level: 2, phase: 9, question: "Qual era a posição de Neemias na corte do rei persa Artaxerxes?", options: ["General", "Copeiro do rei", "Conselheiro", "Escriba"], answer: 1 },
+            { level: 2, phase: 9, question: "O que Neemias sentiu-se chamado a fazer ao ouvir sobre a condição de Jerusalém?", options: ["Orar e jejuar", "Reconstruir as muralhas da cidade", "Enviar dinheiro para o povo", "Liderar uma rebelião"], answer: 1 },
+            { level: 2, phase: 9, question: "Quem foram os principais opositores de Neemias na reconstrução dos muros?", options: ["Sambalate e Tobias", "Faraó e seu exército", "Os filisteus", "O rei da Pérsia"], answer: 0 },
+            { level: 2, phase: 9, question: "Em quanto tempo Neemias e o povo reconstruíram as muralhas de Jerusalém?", options: ["7 anos", "1 ano", "100 dias", "52 dias"], answer: 3 },
+            { level: 2, phase: 9, question: "Depois que os muros foram reconstruídos, o que Esdras fez para o povo?", options: ["Fez uma grande festa", "Leu o Livro da Lei para eles publicamente", "Coroou Neemias como rei", "Construiu um novo palácio"], answer: 1 },
+            { level: 2, phase: 9, question: "O livro de Neemias enfatiza a importância de quê?", options: ["Oração e trabalho prático", "Apenas oração", "Apenas trabalho", "Guerra e conquista"], answer: 0 },
+            // Fase 10
+            { level: 2, phase: 10, question: "Em que império a história de Ester acontece?", options: ["Babilônico", "Grego", "Romano", "Persa"], answer: 3 },
+            { level: 2, phase: 10, question: "Qual era o nome hebraico de Ester?", options: ["Vasti", "Hadassa", "Zeres", "Miriã"], answer: 1 },
+            { level: 2, phase: 10, question: "Quem era o primo de Ester, que a criou?", options: ["Hamã", "Mardoqueu", "Hegai", "Arbona"], answer: 1 },
+            { level: 2, phase: 10, question: "Por que a rainha Vasti foi deposta pelo rei Assuero (Xerxes)?", options: ["Ela traiu o rei", "Ela se recusou a exibir sua beleza perante os convidados do rei", "Ela era estéril", "Ela era de uma nação inimiga"], answer: 1 },
+            { level: 2, phase: 10, question: "Quem foi o vilão da história de Ester, que conspirou para destruir todos os judeus?", options: ["O rei Assuero", "Mardoqueu", "Hamã", "Bigtã"], answer: 2 },
+            { level: 2, phase: 10, question: "Por que Hamã odiava Mardoqueu?", options: ["Porque Mardoqueu se recusou a se curvar a ele", "Porque Mardoqueu era mais rico", "Porque eles eram de famílias rivais", "Porque Mardoqueu o insultou"], answer: 0 },
+            { level: 2, phase: 10, question: "Qual a famosa frase de Mardoqueu para Ester, incentivando-a a agir?", options: ["'A fé move montanhas'", "'Quem sabe se não foi para um momento como este que você chegou à posição de rainha?'", "'O Senhor é a minha força'", "'Seja forte e corajosa'"], answer: 1 },
+            { level: 2, phase: 10, question: "Como Ester se aproximou do rei para fazer seu pedido?", options: ["Enviando uma carta", "Com jejum e depois se apresentando no pátio interior, arriscando sua vida", "Enviando Mardoqueu em seu lugar", "Durante um festival público"], answer: 1 },
+            { level: 2, phase: 10, question: "Qual foi o destino de Hamã?", options: ["Ele foi exilado", "Ele foi enforcado na forca que preparou para Mardoqueu", "Ele foi perdoado por Ester", "Ele fugiu do reino"], answer: 1 },
+            { level: 2, phase: 10, question: "Qual festa judaica foi instituída para comemorar a libertação dos judeus na história de Ester?", options: ["Páscoa", "Hanukkah", "Yom Kippur", "Purim"], answer: 3 },
+            
+            // Nível 3: Poesia e Sabedoria (Jó a Cantares)
+            // Fase 1
+            { level: 3, phase: 1, question: "Qual livro da Bíblia aborda a questão do sofrimento de um homem justo?", options: ["Salmos", "Provérbios", "Jó", "Eclesiastes"], answer: 2 },
+            { level: 3, phase: 1, question: "De onde era Jó?", options: ["Terra de Uz", "Jerusalém", "Babilônia", "Egito"], answer: 0 },
+            { level: 3, phase: 1, question: "Quem desafiou Deus a respeito da integridade de Jó?", options: ["Um anjo", "Satanás", "Os amigos de Jó", "A esposa de Jó"], answer: 1 },
+            { level: 3, phase: 1, question: "Qual foi a primeira calamidade que aconteceu a Jó?", options: ["Ele ficou doente", "Sua casa desabou", "Ele perdeu seus bens e seus filhos morreram", "Houve uma grande seca"], answer: 2 },
+            { level: 3, phase: 1, question: "Qual foi a segunda provação de Jó?", options: ["Ele foi preso", "Ele foi afligido com feridas dolorosas por todo o corpo", "Ele foi abandonado por sua esposa", "Ele foi exilado"], answer: 1 },
+            { level: 3, phase: 1, question: "Quantos amigos vieram 'consolar' Jó?", options: ["Dois", "Três", "Quatro", "Cinco"], answer: 1 },
+            { level: 3, phase: 1, question: "Qual era o argumento principal dos amigos de Jó para o seu sofrimento?", options: ["Que era um teste de Deus", "Que era por causa de algum pecado oculto", "Que era obra do acaso", "Que era para ele se tornar mais forte"], answer: 1 },
+            { level: 3, phase: 1, question: "Apesar de tudo, qual famosa declaração de fé Jó fez?", options: ["'O Senhor é meu pastor'", "'Tudo posso naquele que me fortalece'", "'Eu sei que o meu Redentor vive'", "'Deus é amor'"], answer: 2 },
+            { level: 3, phase: 1, question: "No final do livro, quem Deus repreende?", options: ["Jó", "Satanás", "Os amigos de Jó", "A esposa de Jó"], answer: 2 },
+            { level: 3, phase: 1, question: "O que aconteceu com Jó no final de sua história?", options: ["Ele morreu em sofrimento", "Ele amaldiçoou a Deus", "Deus restaurou em dobro tudo o que ele tinha perdido", "Ele se tornou um rei"], answer: 2 },
+            // Fase 2
+            { level: 3, phase: 2, question: "Qual é o maior livro da Bíblia em número de capítulos?", options: ["Gênesis", "Isaías", "Salmos", "Jeremias"], answer: 2 },
+            { level: 3, phase: 2, question: "Quantos Salmos existem na Bíblia?", options: ["100", "120", "150", "200"], answer: 2 },
+            { level: 3, phase: 2, question: "A quem a maioria dos Salmos é tradicionalmente atribuída?", options: ["Salomão", "Moisés", "Davi", "Asafe"], answer: 2 },
+            { level: 3, phase: 2, question: "Qual o Salmo mais conhecido, que começa com 'O Senhor é o meu pastor'?", options: ["Salmo 1", "Salmo 23", "Salmo 91", "Salmo 100"], answer: 1 },
+            { level: 3, phase: 2, question: "Qual o maior capítulo da Bíblia?", options: ["Gênesis 1", "Isaías 53", "Salmo 119", "Lucas 15"], answer: 2 },
+            { level: 3, phase: 2, question: "O Salmo 119 é um acróstico sobre o quê?", options: ["A criação", "A sabedoria", "A Palavra de Deus (Lei/Torá)", "O Messias"], answer: 2 },
+            { level: 3, phase: 2, question: "O Salmo 91 é conhecido como um salmo de quê?", options: ["Arrependimento", "Lamento", "Louvor", "Proteção e refúgio"], answer: 3 },
+            { level: 3, phase: 2, question: "O Salmo 51 é uma famosa oração de...", options: ["Ação de graças de Davi", "Arrependimento de Davi após seu pecado com Bate-Seba", "Pedido de sabedoria de Salomão", "Louvor de Moisés"], answer: 1 },
+            { level: 3, phase: 2, question: "Os Salmos de 'lamento' expressam o quê?", options: ["Alegria e gratidão", "Dor, angústia e clamor a Deus", "Ensinamentos de sabedoria", "Profecias sobre o futuro"], answer: 1 },
+            { level: 3, phase: 2, question: "Os Salmos são divididos em quantos 'livros'?", options: ["3", "5", "7", "12"], answer: 1 },
+            // Fase 3
+            { level: 3, phase: 3, question: "Qual livro é uma coleção de ditos sábios, principalmente atribuídos a Salomão?", options: ["Eclesiastes", "Jó", "Provérbios", "Cantares"], answer: 2 },
+            { level: 3, phase: 3, question: "O livro de Provérbios começa com o conselho: 'O temor do Senhor é o princípio da...'", options: ["Riqueza", "Honra", "Sabedoria", "Vida"], answer: 2 },
+            { level: 3, phase: 3, question: "Provérbios 31 descreve as qualidades de quem?", options: ["Do rei ideal", "Do bom amigo", "Da mulher virtuosa", "Do sacerdote fiel"], answer: 2 },
+            { level: 3, phase: 3, question: "Qual animal é usado em Provérbios como exemplo de diligência e trabalho?", options: ["A águia", "O leão", "A formiga", "A ovelha"], answer: 2 },
+            { level: 3, phase: 3, question: "De acordo com Provérbios, o que 'cobre uma multidão de pecados'?", options: ["O ouro", "O amor", "O sacrifício", "A justiça"], answer: 1 },
+            { level: 3, phase: 3, question: "Qual livro questiona o sentido da vida 'debaixo do sol'?", options: ["Provérbios", "Eclesiastes", "Jó", "Salmos"], answer: 1 },
+            { level: 3, phase: 3, question: "Qual é a famosa frase repetida em Eclesiastes que significa 'futilidade' ou 'vazio'?", options: ["'Tudo é possível'", "'Assim diz o Senhor'", "'Vaidade de vaidades, tudo é vaidade'", "'O tempo de Deus'"], answer: 2 },
+            { level: 3, phase: 3, question: "O autor de Eclesiastes se identifica como...", options: ["'O Profeta'", "'O Sábio'", "'O Pregador' (Qoheleth)", "'O Rei'"], answer: 2 },
+            { level: 3, phase: 3, question: "Qual é a conclusão final do livro de Eclesiastes?", options: ["Aproveitar a vida ao máximo sem se preocupar com nada", "Acumular riqueza e conhecimento", "Temer a Deus e guardar os seus mandamentos", "Que a vida não tem sentido"], answer: 2 },
+            { level: 3, phase: 3, question: "Qual livro é um poema de amor entre um noivo e sua noiva?", options: ["Rute", "Ester", "Lamentações", "Cantares de Salomão"], answer: 3 },
+            // Fase 4
+            { level: 3, phase: 4, question: "A quem o livro de Cantares é tradicionalmente atribuído?", options: ["Davi", "Salomão", "Isaías", "Um autor anônimo"], answer: 1 },
+            { level: 3, phase: 4, question: "Cantares é frequentemente interpretado como uma alegoria do amor entre quem?", options: ["Adão e Eva", "Israel e as nações", "Deus e Israel, ou Cristo e a Igreja", "O homem e a sabedoria"], answer: 2 },
+            { level: 3, phase: 4, question: "Os livros de Jó, Salmos, Provérbios, Eclesiastes e Cantares são conhecidos como...", options: ["Livros da Lei", "Livros Históricos", "Livros Proféticos", "Livros Poéticos ou de Sabedoria"], answer: 3 },
+            { level: 3, phase: 4, question: "De acordo com Provérbios, o que é 'melhor do que o ouro fino'?", options: ["A prata", "A saúde", "A sabedoria", "A amizade"], answer: 2 },
+            { level: 3, phase: 4, question: "Complete a frase de Provérbios: 'Ensina a criança no caminho em que deve andar, e...'", options: ["...ela será feliz.'", "'...ela te honrará.'", "'...até quando envelhecer, não se desviará dele.'", "'...ela te dará netos.'"], answer: 2 },
+            { level: 3, phase: 4, question: "O Salmo 1 afirma que o homem bem-aventurado é aquele que...", options: ["...é rico e poderoso.", "...tem prazer na lei do Senhor e nela medita de dia e de noite.", "...dá esmolas aos pobres.", "...nunca peca."], answer: 1 },
+            { level: 3, phase: 4, question: "Em Eclesiastes, o autor diz que para tudo há um...", options: ["Preço", "Motivo", "Tempo determinado", "Fim"], answer: 2 },
+            { level: 3, phase: 4, question: "Quem é descrito em Provérbios como 'a coroa do seu marido'?", options: ["A mulher sábia", "A mulher rica", "A mulher bonita", "A mulher virtuosa"], answer: 3 },
+            { level: 3, phase: 4, question: "Qual o tema principal do livro de Provérbios?", options: ["A história de Israel", "A soberania de Deus", "A busca pela sabedoria prática para a vida diária", "O fim dos tempos"], answer: 2 },
+            { level: 3, phase: 4, question: "Jó, em seu sofrimento, declara: 'Nu saí do ventre de minha mãe e nu tornarei para lá. O Senhor o deu e o Senhor o...'", options: ["...multiplicou.'", "'...escondeu.'", "'...tomou.'", "'...abençoou.'"], answer: 2 },
+             // Fase 5
+            { level: 3, phase: 5, question: "Qual o Salmo que começa com 'Aquele que habita no esconderijo do Altíssimo'?", options: ["Salmo 1", "Salmo 23", "Salmo 91", "Salmo 121"], answer: 2 },
+            { level: 3, phase: 5, question: "De acordo com Provérbios 27:17, o que o ferro afia?", options: ["A espada", "A faca", "O amigo", "O ferro"], answer: 3 },
+            { level: 3, phase: 5, question: "No livro de Jó, o que o Beemote e o Leviatã representam?", options: ["Nações inimigas de Israel", "Grandes e poderosas criaturas de Deus que demonstram Sua soberania", "Pecados do homem", "Tipos de anjos"], answer: 1 },
+            { level: 3, phase: 5, question: "Qual é o menor Salmo?", options: ["Salmo 150", "Salmo 117", "Salmo 1", "Salmo 23"], answer: 1 },
+            { level: 3, phase: 5, question: "Complete Provérbios 4:23: 'Sobre tudo o que se deve guardar, guarda o teu...'", options: ["...tesouro.'", "'...coração.'", "'...segredo.'", "'...sábado.'"], answer: 1 },
+            { level: 3, phase: 5, question: "Que tipo de Salmos eram cantados pelos peregrinos a caminho de Jerusalém?", options: ["Salmos de Sabedoria", "Salmos Reais", "Cânticos de Romagem (ou de Degraus)", "Salmos de Lamento"], answer: 2 },
+            { level: 3, phase: 5, question: "O autor de Eclesiastes conclui que o trabalho é um...", options: ["Fardo", "Castigo", "Dom de Deus", "Caminho para a riqueza"], answer: 2 },
+            { level: 3, phase: 5, question: "O que o Salmo 19 declara que 'proclama a glória de Deus'?", options: ["A Lei do Senhor", "Os céus", "Os reis da Terra", "Os anjos"], answer: 1 },
+            { level: 3, phase: 5, question: "A quem Provérbios personifica como uma mulher que clama nas ruas, oferecendo conhecimento?", options: ["A Justiça", "A Sabedoria", "A Loucura", "A Fé"], answer: 1 },
+            { level: 3, phase: 5, question: "Em Cantares, a amada é comparada a uma 'lírio entre...'?", options: ["...as rosas.'", "'...os espinhos.'", "'...as pedras.'", "'...as árvores.'"], answer: 1 },
+            
+            // Nível 4: Os Profetas (Maiores e Menores)
+            // Fase 1
+            { level: 4, phase: 1, question: "Qual o primeiro livro dos Profetas Maiores?", options: ["Jeremias", "Ezequiel", "Daniel", "Isaías"], answer: 3 },
+            { level: 4, phase: 1, question: "Isaías profetizou principalmente para qual reino?", options: ["Reino do Norte (Israel)", "Reino do Sul (Judá)", "Babilônia", "Egito"], answer: 1 },
+            { level: 4, phase: 1, question: "Qual profeta teve uma visão de Deus em seu trono, com serafins clamando 'Santo, Santo, Santo'?", options: ["Jeremias", "Isaías", "Ezequiel", "Daniel"], answer: 1 },
+            { level: 4, phase: 1, question: "Isaías 7:14 profetiza que uma virgem conceberia e daria à luz um filho chamado...", options: ["Messias", "Emanuel", "Jesus", "Salvador"], answer: 1 },
+            { level: 4, phase: 1, question: "O famoso capítulo sobre o 'Servo Sofredor', que se cumpre em Jesus, está em qual parte de Isaías?", options: ["Isaías 9", "Isaías 40", "Isaías 53", "Isaías 61"], answer: 2 },
+            { level: 4, phase: 1, question: "Qual profeta é conhecido como o 'profeta chorão'?", options: ["Isaías", "Jeremias", "Jonas", "Amós"], answer: 1 },
+            { level: 4, phase: 1, question: "Qual foi a principal mensagem de Jeremias para o povo de Judá em relação à Babilônia?", options: ["Lutar até a morte", "Fazer uma aliança com o Egito", "Submeter-se ao domínio babilônico como juízo de Deus", "Fugir para as montanhas"], answer: 2 },
+            { level: 4, phase: 1, question: "Que desculpa Jeremias deu a Deus quando foi chamado para ser profeta?", options: ["Ele era gago", "Ele era muito velho", "Ele era apenas uma criança", "Ele não era da tribo certa"], answer: 2 },
+            { level: 4, phase: 1, question: "Qual livro, escrito por Jeremias, é um lamento pela destruição de Jerusalém?", options: ["Nahum", "Habacuque", "Sofonias", "Lamentações"], answer: 3 },
+            { level: 4, phase: 1, question: "Onde Jeremias estava quando o rei Jeoaquim queimou o rolo com suas profecias?", options: ["No templo", "Em sua casa", "Na prisão", "No palácio"], answer: 2 },
+            // Fase 2
+            { level: 4, phase: 2, question: "Qual profeta foi levado para o exílio na Babilônia e profetizou às margens do rio Quebar?", options: ["Daniel", "Jeremias", "Ezequiel", "Isaías"], answer: 2 },
+            { level: 4, phase: 2, question: "Qual a famosa visão de Ezequiel que simbolizava a restauração de Israel?", options: ["A visão da escada de Jacó", "A visão dos quatro seres viventes", "A visão do vale de ossos secos", "A visão do templo futuro"], answer: 2 },
+            { level: 4, phase: 2, question: "Em Ezequiel, o que Deus diz que substituirá o 'coração de pedra' do seu povo?", options: ["Um coração de ouro", "Um coração de carne", "Um coração sábio", "Um coração valente"], answer: 1 },
+            { level: 4, phase: 2, question: "Qual profeta serviu na corte de reis babilônicos e persas?", options: ["Isaías", "Ezequiel", "Daniel", "Jeremias"], answer: 2 },
+            { level: 4, phase: 2, question: "Daniel e seus amigos se recusaram a comer a comida do rei por quê?", options: ["Não gostavam do sabor", "Para não se contaminarem e desobedecerem às leis alimentares de Deus", "Estavam em jejum", "A comida estava estragada"], answer: 1 },
+            { level: 4, phase: 2, question: "Quais eram os nomes babilônicos dos amigos de Daniel: Hananias, Misael e Azarias?", options: ["Sadraque, Mesaque e Abede-Nego", "Beltsazar, Aspenaz e Arioco", "Ciro, Dario e Artaxerxes", "Hamã, Mardoqueu e Hegai"], answer: 0 },
+            { level: 4, phase: 2, question: "O que aconteceu com os três amigos de Daniel quando se recusaram a adorar a estátua de ouro de Nabucodonosor?", options: ["Foram presos", "Foram jogados em uma fornalha ardente", "Foram exilados", "Foram perdoados"], answer: 1 },
+            { level: 4, phase: 2, question: "Qual rei viu uma mão misteriosa escrevendo na parede durante um banquete?", options: ["Nabucodonosor", "Ciro", "Belsazar", "Dario"], answer: 2 },
+            { level: 4, phase: 2, question: "Por que Daniel foi jogado na cova dos leões?", options: ["Ele desobedeceu ao rei", "Ele se recusou a adorar a estátua", "Porque ele orou ao seu Deus, desafiando um decreto do rei", "Ele foi acusado de traição"], answer: 2 },
+            { level: 4, phase: 2, question: "Os Profetas Maiores são chamados assim por quê?", options: ["Porque eram mais importantes", "Porque eram mais velhos", "Pelo tamanho de seus livros", "Porque profetizaram para reis"], answer: 2 },
+             // Fase 3
+            { level: 4, phase: 3, question: "A quem Deus ordenou que se casasse com uma prostituta como um símbolo da infidelidade de Israel?", options: ["Amós", "Oseias", "Jonas", "Joel"], answer: 1 },
+            { level: 4, phase: 3, question: "Qual profeta falou sobre o derramamento do Espírito Santo sobre toda a carne, uma profecia citada por Pedro em Pentecostes?", options: ["Joel", "Obadias", "Miqueias", "Naum"], answer: 0 },
+            { level: 4, phase: 3, question: "Qual profeta era um pastor de ovelhas de Tecoa e denunciou a injustiça social em Israel?", options: ["Oseias", "Amós", "Jonas", "Habacuque"], answer: 1 },
+            { level: 4, phase: 3, question: "Qual é o menor livro do Antigo Testamento, que contém uma profecia contra Edom?", options: ["Ageu", "Filemom", "Obadias", "Naum"], answer: 2 },
+            { level: 4, phase: 3, question: "Qual profeta tentou fugir de Deus e foi engolido por um grande peixe?", options: ["Daniel", "Elias", "Jonas", "Naum"], answer: 2 },
+            { level: 4, phase: 3, question: "Para qual cidade Deus enviou Jonas para pregar o arrependimento?", options: ["Babilônia", "Damasco", "Társis", "Nínive"], answer: 3 },
+            { level: 4, phase: 3, question: "Qual profeta predisse que o Messias nasceria em Belém?", options: ["Isaías", "Miqueias", "Zacarias", "Malaquias"], answer: 1 },
+            { level: 4, phase: 3, question: "Qual profeta anunciou a destruição de Nínive, cerca de 150 anos depois que ela se arrependeu com a pregação de Jonas?", options: ["Sofonias", "Habacuque", "Naum", "Jonas"], answer: 2 },
+            { level: 4, phase: 3, question: "Qual profeta dialogou com Deus, questionando por que Ele usaria uma nação ímpia (Babilônia) para punir Seu próprio povo?", options: ["Habacuque", "Ageu", "Zacarias", "Malaquias"], answer: 0 },
+            { level: 4, phase: 3, question: "A famosa declaração 'mas o justo viverá pela sua fé' vem de qual profeta?", options: ["Isaías", "Jeremias", "Habacuque", "Ezequiel"], answer: 2 },
+            // Fase 4
+            { level: 4, phase: 4, question: "Qual profeta advertiu sobre o 'Dia do Senhor', um dia de juízo e escuridão?", options: ["Sofonias", "Ageu", "Zacarias", "Malaquias"], answer: 0 },
+            { level: 4, phase: 4, question: "Qual profeta, junto com Zacarias, incentivou a reconstrução do templo após o exílio?", options: ["Malaquias", "Ageu", "Joel", "Obadias"], answer: 1 },
+            { level: 4, phase: 4, question: "Qual profeta teve visões de um candelabro de ouro, dois ramos de oliveira e quatro cavaleiros?", options: ["Daniel", "Ezequiel", "Zacarias", "Isaías"], answer: 2 },
+            { level: 4, phase: 4, question: "Qual profeta previu que o Messias entraria em Jerusalém montado em um jumento?", options: ["Isaías", "Jeremias", "Zacarias", "Miqueias"], answer: 2 },
+            { level: 4, phase: 4, question: "Qual é o último livro do Antigo Testamento?", options: ["Zacarias", "Ageu", "Malaquias", "Crônicas"], answer: 2 },
+            { level: 4, phase: 4, question: "Qual profeta repreendeu o povo por oferecer sacrifícios defeituosos e reter os dízimos?", options: ["Ageu", "Malaquias", "Sofonias", "Habacuque"], answer: 1 },
+            { level: 4, phase: 4, question: "Malaquias profetizou o retorno de quem antes do 'grande e terrível dia do Senhor'?", options: ["Moisés", "Davi", "Elias", "Abraão"], answer: 2 },
+            { level: 4, phase: 4, question: "Quantos são os livros dos 'Profetas Menores'?", options: ["5", "7", "10", "12"], answer: 3 },
+            { level: 4, phase: 4, question: "A principal tarefa de um profeta era...", options: ["Realizar milagres", "Ser um líder militar", "Falar a palavra de Deus ao povo, chamando-o ao arrependimento", "Escrever a Bíblia"], answer: 2 },
+            { level: 4, phase: 4, question: "A profecia 'Eis que o SENHOR, nosso Deus, nos fez ver a sua glória e a sua grandeza' é de qual livro do Pentateuco, mas reflete o tema profético?", options: ["Gênesis", "Êxodo", "Deuteronômio", "Levítico"], answer: 2 },
+
+            // Nível 5: O Novo Testamento
+            // Fase 1
+            { level: 5, phase: 1, question: "Qual o primeiro livro do Novo Testamento?", options: ["Marcos", "Lucas", "Mateus", "Atos"], answer: 2 },
+            { level: 5, phase: 1, question: "Quem eram os pais de João Batista?", options: ["José e Maria", "Abraão e Sara", "Zacarias e Isabel", "Joaquim e Ana"], answer: 2 },
+            { level: 5, phase: 1, question: "Qual anjo anunciou o nascimento de Jesus a Maria?", options: ["Miguel", "Rafael", "Gabriel", "Uriel"], answer: 2 },
+            { level: 5, phase: 1, question: "Onde Jesus nasceu?", options: ["Nazaré", "Jerusalém", "Belém", "Cafarnaum"], answer: 2 },
+            { level: 5, phase: 1, question: "Quem visitou o menino Jesus guiado por uma estrela?", options: ["Pastores", "Reis de Israel", "Magos do Oriente", "Sacerdotes do Templo"], answer: 2 },
+            { level: 5, phase: 1, question: "Para onde José, Maria e Jesus fugiram para escapar do rei Herodes?", options: ["Babilônia", "Egito", "Síria", "Samaria"], answer: 1 },
+            { level: 5, phase: 1, question: "Quem batizou Jesus no rio Jordão?", options: ["Pedro", "Tiago", "João Batista", "Um anjo"], answer: 2 },
+            { level: 5, phase: 1, question: "O que desceu do céu como uma pomba durante o batismo de Jesus?", options: ["Uma luz", "O Espírito Santo", "Uma pena", "Fogo"], answer: 1 },
+            { level: 5, phase: 1, question: "Quantos dias e noites Jesus jejuou no deserto, onde foi tentado por Satanás?", options: ["3", "7", "12", "40"], answer: 3 },
+            { level: 5, phase: 1, question: "Qual foi o primeiro milagre de Jesus, registrado no Evangelho de João?", options: ["A cura de um cego", "A multiplicação dos pães", "Transformar água em vinho nas bodas de Caná", "Andar sobre as águas"], answer: 2 },
+            // Fase 2
+            { level: 5, phase: 2, question: "Quantos apóstolos Jesus escolheu?", options: ["10", "11", "12", "13"], answer: 2 },
+            { level: 5, phase: 2, question: "Qual apóstolo era um cobrador de impostos?", options: ["Pedro", "André", "Mateus", "João"], answer: 2 },
+            { level: 5, phase: 2, question: "Quais três apóstolos formavam o círculo mais íntimo de Jesus?", options: ["Mateus, Tomé, Judas", "Pedro, Tiago e João", "André, Filipe, Bartolomeu", "Simão, Tadeu, Tiago (filho de Alfeu)"], answer: 1 },
+            { level: 5, phase: 2, question: "O Sermão da Montanha, incluindo as Bem-aventuranças, está registrado em qual Evangelho?", options: ["Marcos", "Lucas", "João", "Mateus"], answer: 3 },
+            { level: 5, phase: 2, question: "O que Jesus disse ser o maior mandamento?", options: ["Não matarás", "Amar a Deus sobre todas as coisas e ao próximo como a si mesmo", "Guardar o sábado", "Não cobiçar"], answer: 1 },
+            { level: 5, phase: 2, question: "Na parábola do Bom Samaritano, quem ajudou o homem ferido?", options: ["O sacerdote", "O levita", "O samaritano", "Um soldado"], answer: 2 },
+            { level: 5, phase: 2, question: "Na parábola do Filho Pródigo, o que o pai fez quando o filho voltou?", options: ["O puniu severamente", "O rejeitou", "Deu uma festa para celebrar seu retorno", "Deu-lhe trabalho como servo"], answer: 2 },
+            { level: 5, phase: 2, question: "Com quantos pães e peixes Jesus alimentou a multidão de cinco mil homens?", options: ["Sete pães e alguns peixinhos", "Cinco pães e dois peixes", "Doze pães e doze peixes", "Um pão e um peixe"], answer: 1 },
+            { level: 5, phase: 2, question: "Quem Jesus ressuscitou dos mortos em Betânia?", options: ["A filha de Jairo", "O filho da viúva de Naim", "Lázaro", "Tabita"], answer: 2 },
+            { level: 5, phase: 2, question: "Qual apóstolo andou sobre as águas com Jesus, mas depois afundou por medo?", options: ["João", "Tiago", "Pedro", "André"], answer: 2 },
+            // Fase 3
+            { level: 5, phase: 3, question: "Que evento na montanha revelou a glória de Jesus a Pedro, Tiago e João?", options: ["A Ascensão", "A Transfiguração", "A Oração no Getsêmani", "A Tentação"], answer: 1 },
+            { level: 5, phase: 3, question: "Quem apareceu ao lado de Jesus durante a Transfiguração?", options: ["Abraão e Isaque", "Davi e Salomão", "Moisés e Elias", "Enoque e Noé"], answer: 2 },
+            { level: 5, phase: 3, question: "Qual apóstolo traiu Jesus?", options: ["Pedro", "Tomé", "Judas Iscariotes", "Mateus"], answer: 2 },
+            { level: 5, phase: 3, question: "Por quantas moedas de prata Judas traiu Jesus?", options: ["10", "20", "30", "50"], answer: 2 },
+            { level: 5, phase: 3, question: "Na Última Ceia, o que o pão e o vinho representavam?", options: ["Sua realeza e poder", "Sua sabedoria e conhecimento", "Seu corpo e seu sangue", "Sua alegria e tristeza"], answer: 2 },
+            { level: 5, phase: 3, question: "Onde Jesus orou fervorosamente antes de ser preso?", options: ["No Templo", "No Monte das Oliveiras (Getsêmani)", "No deserto", "Em Betânia"], answer: 1 },
+            { level: 5, phase: 3, question: "Qual apóstolo negou Jesus três vezes?", options: ["João", "Judas", "Tomé", "Pedro"], answer: 3 },
+            { level: 5, phase: 3, question: "Quem foi o governador romano que condenou Jesus à morte?", options: ["Herodes", "César Augusto", "Pôncio Pilatos", "Tibério"], answer: 2 },
+            { level: 5, phase: 3, question: "Onde Jesus foi crucificado?", options: ["Monte Sinai", "Gólgota (Lugar da Caveira)", "Monte das Oliveiras", "Vale de Jaboque"], answer: 1 },
+            { level: 5, phase: 3, question: "O que estava escrito na placa acima da cruz de Jesus?", options: ["'Rei dos Romanos'", "'Este é o Profeta'", "'Jesus Nazareno, o Rei dos Judeus'", "'Inimigo de César'"], answer: 2 },
+            // Fase 4
+            { level: 5, phase: 4, question: "No quantos dias após sua crucificação Jesus ressuscitou?", options: ["No mesmo dia", "No segundo dia", "No terceiro dia", "No sétimo dia"], answer: 2 },
+            { level: 5, phase: 4, question: "Quem foi a primeira pessoa a ver Jesus ressuscitado, segundo o Evangelho de João?", options: ["Pedro", "Maria, mãe de Jesus", "Maria Madalena", "João"], answer: 2 },
+            { level: 5, phase: 4, question: "Qual apóstolo duvidou da ressurreição até que tocasse nas feridas de Jesus?", options: ["Filipe", "Tomé", "Bartolomeu", "André"], answer: 1 },
+            { level: 5, phase: 4, question: "Após a ressurreição, Jesus apareceu a dois discípulos a caminho de que cidade?", options: ["Jericó", "Emaús", "Betânia", "Cafarnaum"], answer: 1 },
+            { level: 5, phase: 4, question: "Qual foi a 'Grande Comissão' que Jesus deu aos seus discípulos antes de ascender ao céu?", options: ["'Construam um templo em meu nome'", "'Vão por todo o mundo e preguem o evangelho'", "'Escrevam tudo o que eu lhes ensinei'", "'Derrotem o Império Romano'"], answer: 1 },
+            { level: 5, phase: 4, question: "Quantos dias após a ressurreição Jesus ascendeu ao céu?", options: ["3", "10", "40", "50"], answer: 2 },
+            { level: 5, phase: 4, question: "Qual livro descreve a história da igreja primitiva após a ascensão de Jesus?", options: ["Romanos", "Hebreus", "Apocalipse", "Atos dos Apóstolos"], answer: 3 },
+            { level: 5, phase: 4, question: "Quem foi escolhido para substituir Judas Iscariotes como apóstolo?", options: ["Barnabé", "Matias", "Estêvão", "Filipe"], answer: 1 },
+            { level: 5, phase: 4, question: "O que aconteceu no dia de Pentecostes?", options: ["Jesus ressuscitou", "O Espírito Santo desceu sobre os discípulos", "O Templo foi destruído", "A Lei foi dada"], answer: 1 },
+            { level: 5, phase: 4, question: "Quem pregou o primeiro sermão no dia de Pentecostes, resultando na conversão de cerca de três mil pessoas?", options: ["João", "Tiago", "Paulo", "Pedro"], answer: 3 },
+            // Fase 5
+            { level: 5, phase: 5, question: "Quem foi o primeiro mártir cristão, que foi apedrejado até a morte?", options: ["Tiago", "Estêvão", "Pedro", "Paulo"], answer: 1 },
+            { level: 5, phase: 5, question: "Quem era Saulo de Tarso antes de sua conversão?", options: ["Um pescador", "Um sacerdote", "Um perseguidor de cristãos", "Um soldado romano"], answer: 2 },
+            { level: 5, phase: 5, question: "O que aconteceu com Saulo na estrada para Damasco?", options: ["Ele caiu de seu cavalo", "Ele teve uma visão de Jesus e ficou cego por três dias", "Ele foi atacado por ladrões", "Um anjo falou com ele"], answer: 1 },
+            { level: 5, phase: 5, question: "Qual foi o novo nome que Saulo adotou após sua conversão?", options: ["Barnabé", "Silas", "Paulo", "Lucas"], answer: 2 },
+            { level: 5, phase: 5, question: "Quem foi o primeiro gentio (não-judeu) a ser batizado, conforme registrado em Atos?", options: ["O eunuco etíope", "Cornélio, o centurião", "Lídia, vendedora de púrpura", "Sérgio Paulo, o procônsul"], answer: 1 },
+            { level: 5, phase: 5, question: "Quem Paulo frequentemente tinha como companheiro em suas viagens missionárias?", options: ["Pedro e João", "Barnabé e Silas", "Timóteo e Tito", "Ambos B e C"], answer: 3 },
+            { level: 5, phase: 5, question: "Na cidade de Listra, quem as pessoas pensavam que Paulo e Barnabé eram?", options: ["Deuses gregos, Zeus e Hermes", "Soldados romanos", "Profetas do Antigo Testamento", "Anjos"], answer: 0 },
+            { level: 5, phase: 5, question: "O que aconteceu com Paulo e Silas na prisão em Filipos?", options: ["Eles fugiram", "Um terremoto abriu as portas da prisão", "O carcereiro os libertou secretamente", "Eles foram executados"], answer: 1 },
+            { level: 5, phase: 5, question: "Para onde Paulo apelou para ser julgado, como cidadão romano?", options: ["Para o Sinédrio em Jerusalém", "Para o governador Félix", "Para César em Roma", "Para o rei Agripa"], answer: 2 },
+            { level: 5, phase: 5, question: "Como a tradição diz que o apóstolo Paulo morreu?", options: ["De velhice", "Em um naufrágio", "Foi decapitado em Roma", "Crucificado"], answer: 2 },
+            // Fase 6
+            { level: 5, phase: 6, question: "Qual epístola de Paulo é considerada sua obra-prima teológica, abordando a justificação pela fé?", options: ["Gálatas", "Efésios", "Romanos", "Colossenses"], answer: 2 },
+            { level: 5, phase: 6, question: "Em Romanos, Paulo afirma que 'todos pecaram e estão destituídos da...'?", options: ["...sabedoria de Deus.'", "'...glória de Deus.'", "'...riqueza de Deus.'", "'...paz de Deus.'"], answer: 1 },
+            { level: 5, phase: 6, question: "Para a igreja de qual cidade Paulo escreveu duas longas cartas abordando muitos problemas, como divisões e imoralidade?", options: ["Roma", "Corinto", "Éfeso", "Filipos"], answer: 1 },
+            { level: 5, phase: 6, question: "1 Coríntios 13 é conhecido como o capítulo do...", options: ["...Fruto do Espírito.'", "'...Amor.'", "'...Armadura de Deus.'", "'...Fé.'"], answer: 1 },
+            { level: 5, phase: 6, question: "Na carta aos Gálatas, Paulo defende veementemente que a salvação é pela fé e não...", options: ["...pelo conhecimento.'", "'...pelas riquezas.'", "'...pelas obras da Lei.'", "'...pelo poder.'"], answer: 2 },
+            { level: 5, phase: 6, question: "Em Efésios, Paulo descreve a 'armadura de Deus'. Qual item NÃO faz parte dela?", options: ["Capacete da salvação", "Couraça da justiça", "Espada do Espírito", "Arco da verdade"], answer: 3 },
+            { level: 5, phase: 6, question: "Qual carta, escrita da prisão, é conhecida como a 'epístola da alegria'?", options: ["Filemom", "Filipenses", "Tito", "Colossenses"], answer: 1 },
+            { level: 5, phase: 6, question: "Em Filipenses, Paulo diz: 'Posso todas as coisas em...'", options: ["...minha própria força.'", "'...Cristo que me fortalece.'", "'...minha sabedoria.'", "'...meus amigos.'"], answer: 1 },
+            { level: 5, phase: 6, question: "As epístolas a Timóteo e Tito são conhecidas como...", options: ["Epístolas da Prisão", "Epístolas Gerais", "Epístolas Pastorais", "Epístolas Católicas"], answer: 2 },
+            { level: 5, phase: 6, question: "Qual é a menor carta de Paulo, escrita a um mestre sobre seu escravo fugitivo?", options: ["Judas", "2 João", "3 João", "Filemom"], answer: 3 },
+            // Fase 7
+            { level: 5, phase: 7, question: "Qual livro argumenta a superioridade de Cristo sobre os anjos, Moisés e o sacerdócio do Antigo Testamento?", options: ["Romanos", "Hebreus", "Apocalipse", "Tiago"], answer: 1 },
+            { level: 5, phase: 7, question: "Hebreus 11 é conhecido como o 'Capítulo da...'?", options: ["...Esperança'", "'...Amor'", "'...Fé'", "'...Sabedoria'"], answer: 2 },
+            { level: 5, phase: 7, question: "Qual epístola, escrita pelo irmão de Jesus, enfatiza que 'a fé sem obras é morta'?", options: ["Pedro", "João", "Judas", "Tiago"], answer: 3 },
+            { level: 5, phase: 7, question: "Qual apóstolo escreveu sobre ser 'santo como Deus é santo' e sobre a esperança viva da ressurreição?", options: ["Paulo", "Pedro", "Tiago", "João"], answer: 1 },
+            { level: 5, phase: 7, question: "Qual epístola de João é famosa por enfatizar o amor e a frase 'Deus é amor'?", options: ["1 João", "2 João", "3 João", "Apocalipse"], answer: 0 },
+            { level: 5, phase: 7, question: "Qual pequena carta alerta contra os falsos mestres, citando exemplos do Antigo Testamento?", options: ["Tito", "Filemom", "Judas", "2 Pedro"], answer: 2 },
+            { level: 5, phase: 7, question: "Qual o último livro da Bíblia?", options: ["Malaquias", "Atos", "Judas", "Apocalipse"], answer: 3 },
+            { level: 5, phase: 7, question: "Quem escreveu o livro de Apocalipse?", options: ["Pedro", "Paulo", "O apóstolo João", "Um autor desconhecido"], answer: 2 },
+            { level: 5, phase: 7, question: "Onde João estava quando recebeu a visão do Apocalipse?", options: ["Em Jerusalém", "Em Roma", "Na ilha de Patmos", "Em Éfeso"], answer: 2 },
+            { level: 5, phase: 7, question: "O Apocalipse começa com cartas para quantas igrejas na Ásia?", options: ["Três", "Cinco", "Sete", "Doze"], answer: 2 },
+             // Fase 8
+            { level: 5, phase: 8, question: "Em Apocalipse, quem é descrito como 'o Cordeiro que foi morto' e é digno de abrir os selos?", options: ["Um anjo", "Miguel", "Jesus Cristo", "Um leão"], answer: 2 },
+            { level: 5, phase: 8, question: "Quais são os famosos Quatro Cavaleiros do Apocalipse?", options: ["Guerra, Fome, Peste, Morte", "Amor, Paz, Esperança, Fé", "Reis, Sacerdotes, Profetas, Juízes", "Norte, Sul, Leste, Oeste"], answer: 0 },
+            { level: 5, phase: 8, question: "O que o livro de Apocalipse descreve no final?", options: ["A destruição total de tudo", "Um novo céu e uma nova terra", "A repetição da história", "O retorno ao Jardim do Éden"], answer: 1 },
+            { level: 5, phase: 8, question: "Qual o nome da cidade celestial que desce do céu?", options: ["Nova Babilônia", "Nova Roma", "Nova Jerusalém", "Cidade de Davi"], answer: 2 },
+            { level: 5, phase: 8, question: "O que não existirá na Nova Jerusalém, pois o Senhor Deus e o Cordeiro são o seu santuário?", options: ["Rei", "Templo", "Sacerdote", "Lei"], answer: 1 },
+            { level: 5, phase: 8, question: "Qual Evangelho foi escrito por um médico e companheiro de Paulo, conhecido por sua narrativa detalhada?", options: ["Mateus", "Marcos", "Lucas", "João"], answer: 2 },
+            { level: 5, phase: 8, question: "Qual Evangelho enfatiza Jesus como o 'Verbo' (Logos) que se fez carne?", options: ["Mateus", "Marcos", "Lucas", "João"], answer: 3 },
+            { level: 5, phase: 8, question: "Qual Evangelho é o mais curto e cheio de ação, possivelmente baseado nas memórias de Pedro?", options: ["Mateus", "Marcos", "Lucas", "João"], answer: 1 },
+            { level: 5, phase: 8, question: "Qual Evangelho foi escrito primariamente para um público judeu, mostrando Jesus como o Messias que cumpriu as profecias do Antigo Testamento?", options: ["Mateus", "Marcos", "Lucas", "João"], answer: 0 },
+            { level: 5, phase: 8, question: "A frase 'Eu sou o caminho, a verdade e a vida' foi dita por Jesus em qual evangelho?", options: ["Mateus", "Marcos", "Lucas", "João"], answer: 3 }
+        ];
+
+        const gameConfig = {
+            levels: [
+                { id: 1, name: "O Pentateuco", icon: "📜" },
+                { id: 2, name: "Livros Históricos", icon: "🏰" },
+                { id: 3, name: "Poesia e Sabedoria", icon: "🎶" },
+                { id: 4, name: "Os Profetas", icon: "🗣️" },
+                { id: 5, name: "O Novo Testamento", icon: "🕊️" },
+            ],
+            phasesPerLevel: 10
+        };
+
+        // --- ESTADO DO JOGO ---
+        let gameState = {
+            currentUser: null,
+            userId: null,
+            progress: {
+                unlockedLevel: 1,
+                completedPhases: {}, // { '1_1': true, '1_2': true }
+                medals: [] // [1, 2]
+            },
+            currentQuiz: {
+                level: 0,
+                phase: 0,
+                questions: [],
+                currentQuestionIndex: 0,
+                score: 0
+            },
+        };
+
+        // --- EFEITOS SONOROS (Tone.js) ---
+        let sounds = {};
+        
+        // It's crucial to initialize Tone.js objects after the library has fully loaded.
+        window.addEventListener('load', () => {
+            try {
+                sounds = {
+                    click: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination(),
+                    correct: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination(),
+                    incorrect: new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination(),
+                    levelUp: new Tone.PolySynth(Tone.Synth).toDestination(),
+                };
+            } catch (e) {
+                console.error("Could not initialize Tone.js sounds.", e);
+            }
+        });
+
+        function playSound(sound) {
+            if (typeof Tone === 'undefined' || Object.keys(sounds).length === 0) {
+                // Silently fail if Tone.js or sounds are not ready
+                return;
+            }
+            if (Tone.context.state !== 'running') {
+                Tone.start();
+            }
+            switch (sound) {
+                case 'click':
+                    sounds.click.triggerAttackRelease('C5', '8n');
+                    break;
+                case 'correct':
+                    sounds.correct.triggerAttackRelease('G5', '8n', Tone.now());
+                    break;
+                case 'incorrect':
+                    sounds.incorrect.triggerAttackRelease('A2', '8n');
+                    break;
+                case 'levelUp':
+                    const now = Tone.now();
+                    sounds.levelUp.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '8n', now);
+                    sounds.levelUp.triggerAttackRelease(['G4', 'B4', 'D5', 'G5'], '8n', now + 0.2);
+                    break;
+            }
+        }
+
+        // --- ELEMENTOS DO DOM ---
+        const screens = {
+            auth: document.getElementById('auth-screen'),
+            menu: document.getElementById('menu-screen'),
+            levelSelect: document.getElementById('level-select-screen'),
+            phaseSelect: document.getElementById('phase-select-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            resultModal: document.getElementById('result-modal'),
+            loading: document.getElementById('loading-spinner'),
+        };
+
+        // --- LÓGICA DE NAVEGAÇÃO ---
+        let currentScreen = 'auth';
+        function showScreen(screenName) {
+            playSound('click');
+            screens[currentScreen].classList.remove('active-screen');
+            screens[screenName].classList.add('active-screen');
+            currentScreen = screenName;
+        }
+        
+        function showLoading(show) {
+            if (show) screens.loading.classList.add('active-screen');
+            else screens.loading.classList.remove('active-screen');
+        }
+
+        // --- LÓGICA DE AUTENTICAÇÃO ---
+        onAuthStateChanged(auth, async (user) => {
+            showLoading(true);
+            if (user) {
+                gameState.currentUser = user;
+                gameState.userId = user.uid;
+                document.getElementById('user-id-display').textContent = user.uid;
+                await loadProgress();
+                showScreen('menu');
+            } else {
+                gameState.currentUser = null;
+                gameState.userId = null;
+                resetLocalGameState();
+                showScreen('auth');
+            }
+            showLoading(false);
+        });
+
+        async function handleSignup(email, password) {
+            showLoading(true);
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await createInitialProgress(userCredential.user.uid);
+            } catch (error) {
+                alert(`Erro no cadastro: ${error.message}`);
+            }
+            showLoading(false);
+        }
+
+        async function handleLogin(email, password) {
+             showLoading(true);
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert(`Erro no login: ${error.message}`);
+            }
+            showLoading(false);
+        }
+        
+        async function handleLogout() {
+            await signOut(auth);
+        }
+
+
+        // --- LÓGICA DE DADOS (FIRESTORE) ---
+        async function createInitialProgress(userId) {
+            const userRef = doc(db, `bibleQuizUsers/${userId}`);
+            const initialProgress = {
+                unlockedLevel: 1,
+                completedPhases: {},
+                medals: []
+            };
+            await setDoc(userRef, initialProgress);
+            gameState.progress = initialProgress;
+        }
+
+        async function loadProgress() {
+            if (!gameState.userId) return;
+            const userRef = doc(db, `bibleQuizUsers/${gameState.userId}`);
+            const docSnap = await getDoc(userRef);
+
+            if (docSnap.exists()) {
+                gameState.progress = docSnap.data();
+            } else {
+                await createInitialProgress(gameState.userId);
+            }
+        }
+        
+        async function saveProgress() {
+            if (!gameState.userId) return;
+            const userRef = doc(db, `bibleQuizUsers/${gameState.userId}`);
+            await setDoc(userRef, gameState.progress, { merge: true });
+        }
+        
+        function resetLocalGameState() {
+             gameState.progress = {
+                unlockedLevel: 1,
+                completedPhases: {},
+                medals: []
+            };
+        }
+
+        // --- RENDERIZAÇÃO DA UI ---
+        function renderLevelSelect() {
+            const container = document.getElementById('level-container');
+            container.innerHTML = '';
+            gameConfig.levels.forEach(level => {
+                const isUnlocked = level.id <= gameState.progress.unlockedLevel;
+                const hasMedal = gameState.progress.medals.includes(level.id);
+
+                const button = document.createElement('button');
+                button.className = `p-4 rounded-lg flex items-center justify-between transition-all duration-300 ${isUnlocked ? 'bg-yellow-700 hover:bg-yellow-600' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`;
+                button.disabled = !isUnlocked;
+                button.onclick = () => {
+                    renderPhaseSelect(level.id);
+                    showScreen('phaseSelect');
+                };
+
+                button.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-4xl mr-4">${level.icon}</span>
+                        <div>
+                            <p class="text-xl font-bold text-left">${level.name}</p>
+                            <p class="text-sm text-left text-yellow-200">${isUnlocked ? 'Desbloqueado' : 'Bloqueado'}</p>
+                        </div>
+                    </div>
+                    ${hasMedal ? `<div class="text-5xl medal medal-earned">🏆</div>` : `<div class="text-5xl medal">🏆</div>` }
+                `;
+                container.appendChild(button);
+            });
+            showScreen('levelSelect');
+        }
+        
+        function renderPhaseSelect(levelId) {
+            const container = document.getElementById('phase-container');
+            document.getElementById('phase-level-title').textContent = `Nível ${levelId} - Fases`;
+            gameState.currentQuiz.level = levelId;
+            container.innerHTML = '';
+
+            for (let i = 1; i <= gameConfig.phasesPerLevel; i++) {
+                const phaseId = `${levelId}_${i}`;
+                const prevPhaseId = i === 1 ? null : `${levelId}_${i - 1}`;
+                const isCompleted = gameState.progress.completedPhases[phaseId];
+                // A fase está desbloqueada se for a primeira, ou se a anterior foi completada
+                const isUnlocked = i === 1 || gameState.progress.completedPhases[prevPhaseId];
+                
+                const button = document.createElement('button');
+                button.className = `phase-button aspect-square flex flex-col items-center justify-center rounded-lg font-bold text-2xl shadow-lg transition-transform hover:scale-110 ${isUnlocked ? 'bg-yellow-600' : 'bg-gray-600 locked'}`;
+                button.disabled = !isUnlocked;
+                button.onclick = () => startQuiz(levelId, i);
+                
+                button.innerHTML = `
+                    <span>${i}</span>
+                    ${isCompleted ? `<span class="text-sm text-green-300">✓</span>` : ''}
+                `;
+                container.appendChild(button);
+            }
+        }
+        
+        function startQuiz(levelId, phase) {
+            // Creative question selection: Shuffle the questions for the current phase
+            const phaseQuestions = allQuestions.filter(q => q.level === levelId && q.phase === phase);
+            const shuffledQuestions = phaseQuestions.sort(() => Math.random() - 0.5);
+
+            gameState.currentQuiz = {
+                level: levelId,
+                phase: phase,
+                questions: shuffledQuestions, // Use the shuffled list
+                currentQuestionIndex: 0,
+                score: 0
+            };
+            
+            if(gameState.currentQuiz.questions.length === 0){
+                // Using a custom modal/alert would be better than the default alert
+                alert("Nenhuma pergunta encontrada para esta fase. (Conteúdo em desenvolvimento)");
+                return;
+            }
+
+            showScreen('quiz');
+            displayCurrentQuestion();
+        }
+
+        function displayCurrentQuestion() {
+            const quiz = gameState.currentQuiz;
+            if (quiz.currentQuestionIndex >= quiz.questions.length) {
+                endQuiz();
+                return;
+            }
+
+            const question = quiz.questions[quiz.currentQuestionIndex];
+            const optionsContainer = document.getElementById('options-container');
+            
+            document.getElementById('quiz-level').textContent = quiz.level;
+            document.getElementById('quiz-phase').textContent = quiz.phase;
+            document.getElementById('question-counter').textContent = quiz.currentQuestionIndex + 1;
+            document.getElementById('total-questions').textContent = quiz.questions.length;
+            document.getElementById('question-text').textContent = question.question;
+
+            const progress = ((quiz.currentQuestionIndex + 1) / quiz.questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'w-full bg-blue-800 bg-opacity-70 hover:bg-blue-700 text-white font-semibold p-4 rounded-lg text-lg transition-colors text-center';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        function selectAnswer(selectedIndex, button) {
+            const quiz = gameState.currentQuiz;
+            const question = quiz.questions[quiz.currentQuestionIndex];
+            const optionsButtons = document.querySelectorAll('#options-container button');
+            
+            // Desabilitar todos os botões após a escolha
+            optionsButtons.forEach(btn => btn.disabled = true);
+
+            if(selectedIndex === question.answer) {
+                playSound('correct');
+                button.classList.remove('bg-blue-800', 'hover:bg-blue-700');
+                button.classList.add('bg-green-600');
+                quiz.score++;
+            } else {
+                playSound('incorrect');
+                button.classList.remove('bg-blue-800', 'hover:bg-blue-700');
+                button.classList.add('bg-red-600');
+                // Mostrar a resposta correta
+                optionsButtons[question.answer].classList.add('bg-green-600');
+            }
+
+            setTimeout(() => {
+                quiz.currentQuestionIndex++;
+                displayCurrentQuestion();
+            }, 1500);
+        }
+
+        async function endQuiz() {
+            const quiz = gameState.currentQuiz;
+            const passingScore = Math.ceil(quiz.questions.length * 0.7); // Precisa acertar 70%
+            const passed = quiz.score >= passingScore;
+            
+            const resultTitle = document.getElementById('result-title');
+            const resultMessage = document.getElementById('result-message');
+            const nextButton = document.getElementById('next-phase-button');
+            const medalContainer = document.getElementById('medal-earned-container');
+            medalContainer.innerHTML = '';
+
+            if (passed) {
+                const phaseId = `${quiz.level}_${quiz.phase}`;
+                gameState.progress.completedPhases[phaseId] = true;
+                
+                resultTitle.textContent = "Fase Concluída!";
+                resultMessage.textContent = `Você acertou ${quiz.score} de ${quiz.questions.length} perguntas.`;
+                nextButton.textContent = "Continuar";
+                nextButton.onclick = () => {
+                    showScreen('levelSelect');
+                    renderLevelSelect();
+                };
+
+                // Lógica de desbloqueio de nível e medalha
+                const allPhasesInLevelCompleted = Array.from({length: gameConfig.phasesPerLevel}, (_, i) => i + 1)
+                                                       .every(phaseNum => gameState.progress.completedPhases[`${quiz.level}_${phaseNum}`]);
+                
+                if (allPhasesInLevelCompleted && !gameState.progress.medals.includes(quiz.level)) {
+                    playSound('levelUp');
+                    gameState.progress.medals.push(quiz.level);
+                    resultTitle.textContent = "Nível Concluído!";
+                    medalContainer.innerHTML = `<p class="text-xl mb-2">Você ganhou uma medalha!</p><div class="text-7xl">🏆</div>`;
+
+                    const nextLevel = quiz.level + 1;
+                    if (nextLevel <= gameConfig.levels.length && nextLevel > gameState.progress.unlockedLevel) {
+                         gameState.progress.unlockedLevel = nextLevel;
+                    }
+                }
+
+            } else {
+                resultTitle.textContent = "Tente Novamente";
+                resultMessage.textContent = `Você acertou ${quiz.score} de ${quiz.questions.length}. É necessário acertar pelo menos ${passingScore} para passar.`;
+                nextButton.textContent = "Tentar Novamente";
+                nextButton.onclick = () => {
+                    showScreen('phaseSelect');
+                    renderPhaseSelect(quiz.level);
+                };
+            }
+
+            await saveProgress();
+            showScreen('resultModal');
+        }
+
+
+        // --- EVENT LISTENERS ---
+        // Auth
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('signup-view').classList.remove('hidden');
+        });
+         document.getElementById('show-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signup-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+        });
+        document.getElementById('signup-button').addEventListener('click', () => {
+            const email = document.getElementById('signup-email').value;
+            const pass = document.getElementById('signup-password').value;
+            handleSignup(email, pass);
+        });
+        document.getElementById('login-button').addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            handleLogin(email, pass);
+        });
+        document.getElementById('logout-button').addEventListener('click', handleLogout);
+
+        // Menu & Navigation
+        document.getElementById('play-button').addEventListener('click', renderLevelSelect);
+        document.getElementById('back-to-menu-from-level').addEventListener('click', () => showScreen('menu'));
+        document.getElementById('back-to-levels').addEventListener('click', () => {
+             showScreen('levelSelect');
+             renderLevelSelect();
+        });
+
+    </script>
+</body>
+</html>
+
